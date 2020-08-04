@@ -1,0 +1,188 @@
+<div>
+    <mat-toolbar
+        class="mat-toolbar"
+        fxLayout="row"
+        fxLayoutAlign="start center"
+        style="width: 100%; margin: 0px; padding: 0px;"
+    >
+        <!-- Toolbar, links are hidden when small -->
+        <div fxLayout="row" fxLayoutAlign="start center" class="toolbar-flex-item">
+            <div fxShow="true">
+                <button
+                    mat-button
+                    class="toggle"
+                    (click)="sidenav.toggle()"
+                    [disableRipple]="true"
+                    *ngIf="router.url !== '/home' || sidebar"
+                >
+                    <mat-icon class="icon menu-icon">menu</mat-icon>
+                </button>
+            </div>
+            <div fxShow="true" fxHide.lt-md="true" style="min-height: 100%;">
+                <!-- hide when small -->
+                <a
+                    mat-button
+                    *ngIf="auth.loggedIn"
+                    class="top-a"
+                    [routerLink]="['/full']"
+                    [style.backgroundColor]="router.url === '/full' ? 'lightgreen' : ''"
+                >
+                    My Waypoints
+                </a>
+                <a
+                    mat-button
+                    class="top-a"
+                    [routerLink]="['/find']"
+                    [style.backgroundColor]="router.url === '/find' ? 'lightgreen' : ''"
+                    >Find</a
+                >
+
+                <a
+                    mat-button
+                    class="top-a"
+                    [routerLink]="['/create']"
+                    [style.backgroundColor]="router.url === '/create' ? 'lightgreen' : ''"
+                >
+                    Create
+                </a>
+
+                <a
+                    mat-button
+                    class="top-a"
+                    [routerLink]="['/view']"
+                    [style.backgroundColor]="router.url === '/view' ? 'lightgreen' : ''"
+                >
+                    View
+                </a>
+            </div>
+        </div>
+        <!--  -->
+
+        <!-- List name at top center, hidden when big-->
+        <div
+            fxLayout="row"
+            style="position: relative; max-width: 'fit-content'; height: auto;"
+            fxLayoutAlign="center center"
+            class="toolbar-flex-item"
+            fxHide.gt-sm="true"
+        >
+            <div fxShow="true" class="title-name">
+                <div
+                    *ngIf="listName"
+                    class="toolbar-center"
+                    style="position: relative; max-width: 'fit-content'; height: auto;"
+                >
+                    {{ listName }}
+                </div>
+            </div>
+            <!-- hide when small -->
+        </div>
+        <!--  -->
+
+        <!-- List name at top center, hidden when small -->
+        <div
+            fxLayout="row"
+            fxLayoutAlign="center center"
+            style="width: 500px;"
+            class="toolbar-flex-item"
+            fxHide.lt-md="true"
+        >
+            <div fxShow="true" class="title-name">
+                <div *ngIf="true" class="big-toolbar-center">
+                    <app-lists [sidebar]="sidebar" *ngIf="router.url !== '/home'"></app-lists>
+                </div>
+            </div>
+            <div fxShow="true" fxHide.lt-md="true"></div>
+            <!-- hide when small -->
+        </div>
+        <!-- -->
+
+        <!-- Logout button on right, hidden when small -->
+        <div
+            fxLayout="row"
+            fxLayoutAlign="center center"
+            class="toolbar-flex-item"
+            style="max-width: 100%;"
+        >
+            <div fxShow="true" fxHide.lt-md="true">
+                <!-- hide when small -->
+                <a
+                    mat-button
+                    class="top-a"
+                    [routerLink]="['/home']"
+                    [style.backgroundColor]="router.url === '/home' ? 'lightgreen' : ''"
+                    >Home</a
+                >
+                <a
+                    *ngIf="auth.loggedIn"
+                    mat-button
+                    class="top-a"
+                    [routerLink]="['/']"
+                    (click)="auth.logout()"
+                    [style.backgroundColor]="'darkgreen'"
+                >
+                    Log Out
+                </a>
+            </div>
+        </div>
+        <!--  -->
+    </mat-toolbar>
+    <!-- TOOLBAR END -->
+    <!-- TOOLBAR END -->
+    <!-- TOOLBAR END -->
+    <mat-sidenav-container fxFlexFill class="sidenav-container">
+        <mat-sidenav
+            #sidenav
+            class="sidenav-content"
+            fxLayout="column"
+            *ngIf="router.url !== '/home' || sidebar"
+        >
+            <!-- hide when big -->
+            <div fxLayout="column" fxHide.gt-sm="true" class="sidebar-buttons">
+                <a mat-flat-button class="a-button" *ngIf="auth.loggedIn" [routerLink]="['/full']">
+                    My Waypoints
+                </a>
+                <a class="a-button" mat-flat-button [routerLink]="['/find']">Find</a>
+
+                <a class="a-button" mat-flat-button [routerLink]="['/create']">
+                    Create
+                </a>
+
+                <a class="a-button" mat-flat-button [routerLink]="['/view']">
+                    View
+                </a>
+                <a
+                    class="a-button"
+                    mat-flat-button
+                    *ngIf="router.url !== '/home'"
+                    [routerLink]="['/home']"
+                    >Home</a
+                >
+                <a
+                    class="a-button"
+                    *ngIf="auth.loggedIn"
+                    mat-flat-button
+                    color="warn"
+                    [routerLink]="['/']"
+                    (click)="auth.logout()"
+                >
+                    Log Out
+                </a>
+            </div>
+            <br />
+            <div class="sidebar-lists" fxFlexFill>
+                <app-lists
+                    *ngIf="router.url !== '/home'"
+                    (ListNameChange)="listChange($event)"
+                    fxFlexAlign.xs="center"
+                    [sidebar]="true"
+                >
+                </app-lists>
+            </div>
+        </mat-sidenav>
+
+        <mat-sidenav-content class="nav-sidenav-content" fxFlexFill>
+            <router-outlet></router-outlet>
+        </mat-sidenav-content>
+    </mat-sidenav-container>
+</div>

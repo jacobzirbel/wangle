@@ -1,0 +1,40 @@
+.ordinate {
+  padding: 10px;
+}
+.form-group {
+  display: flex;
+  flex-flow: row nowrap;
+}
+.dd {
+  max-width: 40%;
+}
+.ddm {
+  max-width: 40%;
+}
+.dds {
+  max-width: 55%;
+}
+.decimal {
+  max-width: 8em;
+}
+.whole {
+  max-width: 3em !important;
+}
+.d-input {
+  margin: 0 !important;
+  padding: 0 !important;
+  outline: 1px black;
+}
+input {
+  width: auto;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}

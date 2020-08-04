@@ -1,0 +1,55 @@
+.container {
+  max-height: 100vh;
+  overflow: scroll;
+}
+.hide-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.hide-scroll {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+button {
+  background-color: lightgreen !important;
+  margin: 0 1px;
+}
+.button-container {
+  margin: 10px auto;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+div .g-button {
+  display: inline-block;
+  color: #444;
+  border: 1px solid #ccc;
+  background: #ddd;
+  box-shadow: 0 0 5px -1px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  vertical-align: middle;
+  width: 75vw;
+  max-width: 400px;
+  padding: 5px;
+  text-align: center;
+  margin: 8px 1px;
+}
+div .g-button:active {
+  color: red;
+  box-shadow: 0 0 5px -1px rgba(0, 0, 0, 0.6);
+}
+.d-button {
+  display: inline-block;
+  color: #ddd;
+  border: 1px solid #ccc;
+  background: #444;
+  box-shadow: 0 0 5px -1px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  vertical-align: middle;
+  width: 75vw;
+  max-width: 400px;
+  padding: 5px;
+  text-align: center;
+  margin: 8px 1px;
+}

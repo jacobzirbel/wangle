@@ -1,0 +1,33 @@
+/* td {
+  word-wrap: break-word;
+  word-break: break-all;
+} */
+p {
+  margin: 2px;
+}
+table {
+  min-width: 100%;
+  max-width: 100%;
+}
+.scroll {
+  height: 50vw;
+  overflow: scroll;
+}
+* {
+  font-size: large;
+}
+@media screen and (min-width: 1200px) {
+  * {
+    font-size: 24px;
+  }
+}
+.test {
+  position: relative;
+}
+.radio,
+.toggles {
+  margin: 5px 5px;
+}
+.coordbtn {
+  transform: scale(0.5);
+}

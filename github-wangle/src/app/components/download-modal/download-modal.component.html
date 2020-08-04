@@ -1,0 +1,22 @@
+<h1 mat-dialog-title>Download</h1>
+<div mat-dialog-content>
+  <div>
+    <mat-form-field>
+      <mat-label>File Name</mat-label>
+      <input matInput [(ngModel)]="fileName" />
+    </mat-form-field>
+    <br />
+    <!-- <p>device (For symbols)</p> -->
+    <mat-form-field>
+      <mat-label>device (For symbols)</mat-label>
+      <mat-select [(ngModel)]="selectedDevice" (selectionChange)="selectionChange()">
+        <mat-option *ngFor="let d of deviceList" [value]="d">{{ d.name }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <p>{{ message }}</p>
+  </div>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-button (click)="downloadButton()" cdkFocusInitial>Download</button>
+</div>

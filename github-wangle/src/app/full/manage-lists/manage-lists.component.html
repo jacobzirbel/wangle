@@ -1,0 +1,72 @@
+<div style="display: flex; flex-direction: row;">
+    <div>
+        <button (click)="showMap = !showMap">{{ showMap ? "Hide" : "Show" }} Map</button>
+        <div *ngIf="showMap" style="height: 600px; width: 600px;">
+            <app-map
+                [waypoints]="mapWaypoints"
+                [shouldWatchBounds]="true"
+                (BoundsChange)="setWaypointsOnMap($event)"
+            ></app-map>
+        </div>
+        <div>
+            <button (click)="deleteList(currentList)">Delete {{ currentList.name }}</button>
+            <button (click)="editList(currentList)">Edit {{ currentList.name }}</button>
+            <button (click)="addWaypointList()">Add New List</button>
+            <button (click)="deDuplicateList()">Check for duplicates</button>
+            <upload-btn
+                [selectedWaypointList]="currentList"
+                [waypointLists]="waypointLists"
+                [route]="route"
+                [isFull]="true"
+            ></upload-btn>
+
+            <app-lists-table
+                [waypointLists]="waypointLists"
+                [highlightId]="currentList.waypointListId"
+                (ListClicked)="waypointListSelected($event)"
+            ></app-lists-table>
+        </div>
+    </div>
+    <div>
+        <mat-form-field>
+            <mat-label>Filter</mat-label>
+            <input matInput (keyup)="handleFilterInput($event)" placeholder="Filter" #input />
+        </mat-form-field>
+        <mat-tab-group>
+            <mat-tab label="All from list">
+                <table-manage
+                    [waypoints]="allWaypointsList"
+                    [filterValue]="filterValue"
+                    [alreadySelected]="waypointsSelected"
+                    [selection]="selection"
+                    (SelectedChange)="selectedChange($event)"
+                    (MasterToggle)="masterToggle($event, allWaypointsList)"
+                ></table-manage>
+            </mat-tab>
+            <mat-tab label="On Map">
+                <table-manage
+                    *ngIf="waypointsOnMap"
+                    [waypoints]="waypointsOnMap"
+                    [filterValue]="filterValue"
+                    [alreadySelected]="waypointsSelected"
+                    [selection]="selection"
+                    (SelectedChange)="selectedChange($event)"
+                    (MasterToggle)="masterToggle($event, waypointsOnMap)"
+                ></table-manage>
+            </mat-tab>
+        </mat-tab-group>
+    </div>
+    <div>
+        <table-manage
+            *ngIf="waypointsSelected"
+            [waypoints]="waypointsSelected"
+            [alreadySelected]="waypointsSelected"
+            [selection]="selection"
+            (SelectedChange)="selectedChange($event)"
+            (MasterToggle)="masterToggle($event, waypointsSelected)"
+        ></table-manage>
+        <button (click)="deleteSelected()">Delete</button>
+        <button (click)="moveToDifferentList()">Move to list...</button>
+        <button (click)="copyToList()">Copy to list...</button>
+    </div>
+</div>

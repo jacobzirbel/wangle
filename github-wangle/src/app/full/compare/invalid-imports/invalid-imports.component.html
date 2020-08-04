@@ -1,0 +1,35 @@
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>symbol</th>
+      <th>Lat</th>
+      <th>Lon</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr
+      name="fieldName"
+      ngDefaultControl
+      *ngFor="let cwp of waypoints"
+      [ngModel]="cwp"
+    >
+      <td [ngStyle]="cwp.valid.nameValid ? '' : setStylesInvalid()">
+        <div>{{ cwp.wp2.name }}</div>
+      </td>
+      <td [ngStyle]="cwp.valid.symbolValid ? '' : setStylesInvalid()">
+        <div *ngIf="cwp.wp2">{{ cwp.wp2.symbol }}</div>
+      </td>
+      <td [ngStyle]="cwp.valid.latValid ? '' : setStylesInvalid()">
+        <div *ngIf="cwp.wp2">{{ cwp.wp2.latitude }}</div>
+      </td>
+      <td [ngStyle]="cwp.valid.lonValid ? '' : setStylesInvalid()">
+        <div *ngIf="cwp.wp2">{{ cwp.wp2.longitude }}</div>
+      </td>
+      <td>
+        <button mat-button (click)="editWaypointFromDialog(cwp)">Edit</button>
+      </td>
+    </tr>
+  </tbody>
+</table>

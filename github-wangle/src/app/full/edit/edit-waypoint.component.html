@@ -1,0 +1,93 @@
+<div class="big-c" *ngIf="ready">
+  <div fxLayout="row wrap" fxLayoutAlign="space-between start">
+    <h1 mat-dialog-title>
+      {{ title }}
+    </h1>
+    <button *ngIf="!newWp" mat-raised-button color="warn" (click)="delete()">
+      Delete Waypoint
+    </button>
+  </div>
+  <br />
+  <div mat-dialog-content>
+    <div class="container">
+      <div
+        [ngStyle]="waypointEditInfo.validationMessage.nameValid ? '' : setStylesInvalid()"
+        class="form-group"
+      >
+        <mat-form-field class="example-full-width">
+          <mat-label>Name</mat-label>
+          <input
+            matInput
+            placeholder="My Waypoint"
+            (input)="validateAgain()"
+            [(ngModel)]="waypointEditInfo.beingEdited.name"
+            id="name"
+          />
+        </mat-form-field>
+      </div>
+
+      <div
+        [ngStyle]="waypointEditInfo.validationMessage.symbolValid ? '' : setStylesInvalid()"
+        (input)="validateAgain()"
+        class="form-group"
+      >
+        <div *ngIf="waypointEditInfo.device !== '0'; else elseBlock">
+          <mat-form-field>
+            <mat-label for="symbol">Symbol</mat-label>
+            <mat-select
+              type="text"
+              class="form-control"
+              required
+              (selectionChange)="validateAgain()"
+              [(value)]="waypointEditInfo.beingEdited.symbol"
+              id="symbol"
+            >
+              <input
+                matInput
+                style="height: 48px; padding: 0 16px;"
+                placeholder="Search"
+                (keyup)="onKey($event.target.value)"
+              />
+              <mat-option
+                *ngFor="let c of symbols"
+                ng-init="c === waypointBeingEdited.symbol"
+                [value]="c"
+              >
+                {{ c }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <ng-template #elseBlock>
+          <mat-form-field class="example-full-width">
+            <mat-label>Custom Symbol</mat-label>
+            <input
+              matInput
+              placeholder="Symbol"
+              (input)="validateAgain()"
+              id="customSymbol"
+              [(ngModel)]="waypointEditInfo.beingEdited.symbol"
+            />
+          </mat-form-field>
+        </ng-template>
+      </div>
+      <div *ngIf="!mini">
+        <app-coordinate
+          (Change)="validateAgain()"
+          [waypointEditInfo]="waypointEditInfo"
+        ></app-coordinate>
+      </div>
+    </div>
+  </div>
+  <div mat-dialog-actions>
+    <button mat-button (click)="close(false)">Cancel</button>
+    <button
+      *ngIf="waypointEditInfo.validationMessage.valid"
+      mat-button
+      (click)="close(true)"
+      cdkFocusInitial
+    >
+      Save
+    </button>
+  </div>
+</div>

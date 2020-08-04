@@ -1,0 +1,57 @@
+<div *ngIf="!mobile; else mobileView">
+  <div class="container">
+    <h5 *ngIf="title">{{ title }}</h5>
+    <span>
+      <input type="checkbox" [checked]="useClusters" (change)="useClusters = !useClusters" />UseClusters
+    </span>
+    <span>
+      <input type="checkbox" [checked]="useNavionics" (change)="updateNavionics()" />Use Navionics
+    </span>
+
+    <!-- Default inline 1-->
+    <span class="custom-control custom-radio custom-control-inline">
+      <input type="radio" class="custom-control-input" id="roadmap" name="mapIdCtrl" (click)="selectMapType('roadmap')"
+        mdbInput [checked]="mapType === 'roadmap'" />
+      <label class="custom-control-label" for="roadmap">roadmap</label>
+    </span>
+
+    <!-- Default inline 2-->
+    <div class="custom-control custom-radio custom-control-inline">
+      <input type="radio" class="custom-control-input" id="hybrid" name="mapIdCtrl" (click)="selectMapType('hybrid')"
+        [checked]="mapType === 'hybrid'" mdbInput />
+      <label class="custom-control-label" for="hybrid">satellite</label>
+    </div>
+
+    <!-- Default inline 3-->
+    <div class="custom-control custom-radio custom-control-inline">
+      <input type="radio" class="custom-control-input" id="terrain" name="mapIdCtrl" [checked]="mapType === 'terrain'"
+        (click)="selectMapType('terrain')" mdbInput />
+      <label class="custom-control-label" for="terrain">terrain</label>
+    </div>
+  </div>
+
+  <!-- the component as the initial center of the map: -->
+  <agm-map class="desk-agm" (mapReady)="useNavionics && applyNavionics($event)"
+    [ngStyle]="{ width: mini ? '300px' : 'auto' }" [latitude]="waypointCenter?.latitude"
+    [longitude]="waypointCenter?.longitude" (mapRightClick)="onRightClick($event)" (mapClick)="onLeftClick($event)"
+    (zoomChange)="onZoomChanged($event)" [mapTypeId]="mapType" [style.height.vh]="height" [zoom]="zoom">
+    <div *ngIf="!useClusters">
+      <agm-marker *ngFor="let wp of waypoints" [latitude]="wp.latitude" [longitude]="wp.longitude"
+        (markerRightClick)="onMarkerRightClick($event, wp)" (markerClick)="onMarkerLeftClick($event, wp)"
+        [label]="wp.name">
+      </agm-marker>
+    </div>
+
+    <div *ngIf="useClusters">
+      <agm-marker-cluster
+        imagePath="https://raw.githubusercontent.com/googlemaps/v3-utility-library/master/markerclustererplus/images/m">
+        <agm-marker *ngFor="let wp of waypoints" [latitude]="wp.latitude" [longitude]="wp.longitude"
+          (markerRightClick)="onMarkerRightClick($event, wp)" (markerClick)="onMarkerLeftClick($event, wp)"
+          [label]="wp.name">
+          <!-- <agm-info-window [disableAutoPan]="false" #infoWindow>
+        <div>
+          <a (click)="onClickInfoView(wp)" class="btn btn-attention pull-right">
+            Edit?<i class="fa fa-angle-double-right"></i>
+          </a>
+        </div>
+      </agm-info-window> -->

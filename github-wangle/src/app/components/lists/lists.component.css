@@ -1,0 +1,21 @@
+.selected {
+  background-color: lightgrey;
+}
+
+.lists-container {
+}
+.auto-width ::ng-deep .mat-form-field {
+  width: auto !important;
+}
+.auto-width ::ng-deep .mat-select-value {
+  max-width: 100% !important;
+  width: auto;
+}
+.auto-width ::ng-deep .mat-form-field-infix {
+  max-width: 100% !important;
+  width: auto;
+}
+.mat-option ::ng-deep {
+  width: 100% !important;
+}
+/*mat-option mat-focus-indicator ng-tns-c175-3 ng-star-inserted*/

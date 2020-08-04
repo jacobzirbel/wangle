@@ -1,0 +1,24 @@
+<div mat-dialog-content>
+    <div *ngFor="let thing of things">
+        <div style="height: 100px; width: 100px;">
+            <app-map [waypoints]="[thing.waypoint]" [mini]="true"></app-map>
+        </div>
+        <mat-form-field>
+            <mat-label>Choose Name</mat-label>
+            <mat-select [(ngModel)]="thing.name">
+                <mat-option *ngFor="let d of thing.nameOptions" [value]="d">{{ d }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+        <mat-form-field>
+            <mat-label>Choose Symbol</mat-label>
+            <mat-select [(ngModel)]="thing.symbol">
+                <mat-option *ngFor="let d of thing.symbolOptions" [value]="d">{{ d }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+</div>
+
+<div mat-dialog-actions>
+    <button mat-button (click)="cancel()">Cancel</button>
+    <button mat-button (click)="save()">Save</button>
+</div>

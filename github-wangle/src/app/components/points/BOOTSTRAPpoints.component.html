@@ -1,0 +1,60 @@
+<div id="points">
+  <div *ngIf="permits.download">
+    <button mat-button (click)="downloadWaypointList()">
+      <fa-icon [icon]="faFileDownload"></fa-icon></button
+    >&nbsp;
+    <button mat-button *ngIf="permits.edit" (click)="editWaypoint()">
+      Add Waypoint
+    </button>
+    <button mat-button (click)="convertList()">Convert List</button>
+  </div>
+  <table class="table table-striped" *ngIf="selectedWaypointList">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Lat</th>
+        <th>Lon</th>
+        <th>Symbol</th>
+        <th></th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let wp of selectedWaypointList.waypoints">
+        <td>
+          {{ wp.name }}
+        </td>
+        <td>
+          {{ wp.latitude }}<br /><sub>{{ wp.latitude | latitude: "dms" }}</sub>
+          <br /><sub>{{ wp.latitude | latitude: "ddm" }}</sub> <br /><sub>{{
+            wp.latitude | latitude: "dd"
+          }}</sub>
+        </td>
+        <td>
+          {{ wp.longitude }}<br />
+          <sub>{{ wp.longitude | longitude: "dms" }}</sub
+          ><br />
+          <sub>{{ wp.longitude | longitude: "ddm" }}</sub
+          ><br />
+          <sub>{{ wp.longitude | longitude: "dd" }}</sub>
+        </td>
+        <td>{{ wp.symbol }}</td>
+        <td>
+          <span class="icons" style="float: right;">
+            <button *ngIf="permits.edit" (click)="editWaypoint(wp)">
+              <fa-icon transform="grow-7" [icon]="faEdit"></fa-icon>
+            </button>
+            <button *ngIf="permits.delete" (click)="deleteWaypoint(wp)">
+              <fa-icon transform="grow-7" [icon]="faDelete"></fa-icon>
+            </button>
+            <button mat-button (click)="centerMap(wp)">
+              <fa-icon [icon]="faMap"></fa-icon>
+            </button>
+          </span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <br />
+</div>

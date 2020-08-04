@@ -1,0 +1,9 @@
+.markerdiv {
+  z-index: 1000;
+}
+
+agm-map {
+  height: calc(var(--fullAfterNav));
+  max-height: calc(100% - 55px);
+  z-index: 0;
+}

@@ -1,0 +1,68 @@
+<div *ngIf="listsLoaded | async" class="container lists-container">
+    <div *ngIf="sidebar">
+        <div fxLayout="row" fxLayoutAlign="space-around start">
+            <div class="mat-h1">Lists</div>
+            <button
+                mat-raised-button
+                color="secondary"
+                *ngIf="permits.listEdit"
+                [matMenuTriggerFor]="belowMenu"
+            >
+                List Options
+            </button>
+            <mat-menu #belowMenu="matMenu" yPosition="below">
+                <button mat-menu-item>
+                    <fa-icon [icon]="faAdd" (click)="addWaypointList()"></fa-icon>&nbsp;<a
+                        (click)="addWaypointList()"
+                        >Add Waypoint List</a
+                    >
+                </button>
+                <button mat-menu-item (click)="editList(selectedWaypointList)">
+                    <fa-icon transform="grow-7" [icon]="faEdit"></fa-icon>&nbsp;
+                    {{ selectedWaypointList.name }}
+                </button>
+                <button mat-menu-item (click)="deleteList(selectedWaypointList)">
+                    <fa-icon transform="grow-7" [icon]="faDelete"></fa-icon> &nbsp;Delete
+                    {{ selectedWaypointList.name }}
+                </button>
+            </mat-menu>
+        </div>
+        <!-- <div *ngIf="permits.upload" class="form-group">
+            <label for="file"> File</label>
+            <input
+                #fileUploadComponent
+                type="file"
+                value="{{ fileName }}"
+                (change)="handleFileInput($event.target.files)"
+            />
+        </div> -->
+        <upload-btn
+            [selectedWaypointList]="selectedWaypointList"
+            [waypointLists]="waypointLists"
+            [route]="route"
+            [isFull]="isFull()"
+        ></upload-btn>
+        <app-lists-table
+            [waypointLists]="waypointLists"
+            [highlightId]="selectedWaypointList.waypointListId"
+            (ListClicked)="waypointListSelected($event)"
+        ></app-lists-table>
+    </div>
+    <!--  -->
+    <!-- TOP BAR -->
+    <div *ngIf="!sidebar" class="auto-width">
+        <mat-select
+            style="width: fit-content;"
+            class="lists-toolbar"
+            [(value)]="selectedWaypointList"
+            (selectionChange)="waypointListSelected(selectedWaypointList)"
+        >
+            <mat-option
+                [value]="list"
+                *ngFor="let list of waypointLists"
+                style="width: fit-content;"
+                >{{ list.name }}</mat-option
+            >
+        </mat-select>
+    </div>
+</div>

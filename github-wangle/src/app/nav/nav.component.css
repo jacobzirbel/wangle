@@ -1,0 +1,74 @@
+button {
+    background-color: green !important;
+    margin: 0 5px !important;
+}
+.top-a {
+    min-height: 55px;
+    line-height: 55px;
+}
+.mat-toolbar {
+    background-color: green;
+    min-width: 100%;
+    height: 55px;
+    position: sticky;
+    position: -webkit-sticky;
+    top: 0; /* Sets the sticky toolbar to be on top */
+    z-index: 1000; /* Ensure that your app's content doesn't overlap the toolbar */
+    padding: auto 0px;
+}
+
+.menu-icon {
+    min-height: 55px;
+    line-height: 55px; /* transform: scale(2.5); */
+}
+::ng-dep button .toggle {
+    background-color: green;
+    line-height: 55px;
+}
+
+:host .mat-button {
+    border-radius: 0px !important;
+}
+.sidenav-content {
+    max-width: fit-content;
+    display: flex;
+}
+
+@media only screen and (max-width: 899px) {
+    .sidenav-content {
+        min-width: 50vw;
+        max-width: 85vw;
+    }
+}
+@media only screen and (min-width: 900px) {
+    .sidenav-content {
+        min-width: 330px;
+    }
+}
+
+.mat-sidenav {
+    z-index: 1000;
+}
+.toolbar-center {
+    text-align: start;
+}
+.a-button {
+    text-align: start;
+    padding: 5px;
+}
+.toolbar-flex-item {
+    height: 100%;
+}
+@media only screen and (min-width: 960px) {
+    .toolbar-flex-item {
+        width: 33%;
+    }
+}
+:host .mat-button {
+    border-radius: 0px !important;
+}
+
+.sidebar-lists {
+    overflow: scroll;
+    -webkit-overflow-scrolling: touch;
+}

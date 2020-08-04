@@ -1,0 +1,6 @@
+::ng-deep .mat-dialog-content {
+  overflow-y: hidden !important;
+}
+* {
+  background-color: black !important;
+}

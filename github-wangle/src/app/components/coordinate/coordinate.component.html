@@ -1,0 +1,33 @@
+<!-- <mat-form-field> -->
+<!-- <mat-label>Coordinate Format</mat-label>
+  <mat-select [(ngModel)]="formatSelected">
+    <mat-option *ngFor="let f of formatStyles; index as i" [value]="f">
+      {{ f }} <small>{{ examples[i] }}</small>
+    </mat-option>
+  </mat-select> -->
+<mat-label style="display: block;" aria-label="coord-format"
+  >Coordinate Format</mat-label
+>
+<mat-radio-group aria-labelledby="coord-format" [(ngModel)]="formatSelected">
+  <mat-radio-button
+    class="format-option"
+    *ngFor="let f of formatStyles; index as i"
+    [value]="f"
+  >
+    {{ examples[i] }}
+  </mat-radio-button>
+</mat-radio-group>
+<!-- </mat-form-field> -->
+<app-ordinate
+  [formatStyle]="formatSelected"
+  type="latitude"
+  [waypoint]="waypointEditInfo.beingEdited"
+  (Change)="change()"
+></app-ordinate>
+
+<app-ordinate
+  [formatStyle]="formatSelected"
+  type="longitude"
+  [waypoint]="waypointEditInfo.beingEdited"
+  (Change)="change()"
+></app-ordinate>

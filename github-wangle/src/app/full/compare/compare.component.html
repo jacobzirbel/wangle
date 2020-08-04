@@ -1,0 +1,76 @@
+<div *ngIf="compareWaypoints">
+    <h1 mat-dialog-title>Compare</h1>
+    <div mat-dialog-content>
+        <div>
+            <select
+                type="text"
+                class="form-control"
+                required
+                [(ngModel)]="selectedWaypointList"
+                id="selectedList"
+                (change)="getCompareWaypoints()"
+            >
+                <option *ngFor="let list of waypointLists" [ngValue]="list">
+                    {{ list.name }}
+                </option>
+            </select>
+            <mat-accordion name="compareWaypoints" ngDefaultControl>
+                <mat-expansion-panel *ngIf="([compareWaypoints, 'PartialMatch'] | filter).length">
+                    <mat-expansion-panel-header>
+                        <mat-panel-title>
+                            Partial Matches
+                            {{ ([compareWaypoints, "PartialMatch"] | filter).length }}
+                            Will be ignored
+                        </mat-panel-title>
+                    </mat-expansion-panel-header>
+                    <app-partial-match
+                        [waypoints]="[compareWaypoints, 'PartialMatch'] | filter"
+                        [ignore]="!data.isImport"
+                    ></app-partial-match>
+                </mat-expansion-panel>
+                <mat-expansion-panel *ngIf="([compareWaypoints, 'ExactMatch'] | filter).length">
+                    <mat-expansion-panel-header>
+                        <mat-panel-title>
+                            Duplicates
+                            {{ ([compareWaypoints, "ExactMatch"] | filter).length }}
+                        </mat-panel-title>
+                    </mat-expansion-panel-header>
+                    <app-exact-match
+                        [waypoints]="[compareWaypoints, 'ExactMatch'] | filter"
+                    ></app-exact-match>
+                </mat-expansion-panel>
+                <mat-expansion-panel *ngIf="([compareWaypoints, 'OnlyInImport'] | filter).length">
+                    <mat-expansion-panel-header>
+                        <mat-panel-title>
+                            Brand New
+                            {{ ([compareWaypoints, "OnlyInImport"] | filter).length }}
+                        </mat-panel-title>
+                    </mat-expansion-panel-header>
+                    <app-only-import
+                        [waypoints]="[compareWaypoints, 'OnlyInImport'] | filter"
+                    ></app-only-import>
+                </mat-expansion-panel>
+                <mat-expansion-panel
+                    *ngIf="([compareWaypoints, 'InvalidWaypoint'] | filter).length"
+                >
+                    <mat-expansion-panel-header>
+                        <mat-panel-title>
+                            Invalid
+                            {{ ([compareWaypoints, "InvalidWaypoint"] | filter).length }}
+                        </mat-panel-title>
+                    </mat-expansion-panel-header>
+                    <app-invalid-imports
+                        [waypoints]="[compareWaypoints, 'InvalidWaypoint'] | filter"
+                        [selectedWaypointList]="selectedWaypointList"
+                    ></app-invalid-imports>
+                </mat-expansion-panel>
+            </mat-accordion>
+        </div>
+    </div>
+    <div mat-dialog-actions>
+        <button mat-button (click)="close(false)">Cancel</button>
+        <button mat-button (click)="close(true)" cdkFocusInitial>
+            Save {{ ([compareWaypoints, "included"] | filter).length }}
+        </button>
+    </div>
+</div>

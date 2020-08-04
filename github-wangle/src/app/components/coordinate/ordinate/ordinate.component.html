@@ -1,0 +1,72 @@
+<div class="ordinate" [ngStyle]="v ? '' : setInvalidStyle()">
+  <div *ngIf="formatStyle === 'Decimal'" class="form-group">
+    <input
+      matInput
+      (input)="inputChange()"
+      type="number"
+      class="form-control decimal"
+      required
+      [(ngModel)]="D_d"
+      id="ordinate"
+    />
+  </div>
+
+  <div *ngIf="formatStyle === 'Degree Decimal Minute'" class="form-group">
+    <input
+      matInput
+      (input)="inputChange()"
+      type="number"
+      class="form-control whole"
+      required
+      [(ngModel)]="DD_d"
+      id="ordinate"
+    />
+    <input
+      matInput
+      (input)="inputChange()"
+      type="number"
+      class="form-control decimal"
+      required
+      [(ngModel)]="DD_m"
+      id="ordinate"
+    />
+    <button mat-stroked-button (click)="directionButtonClick()">
+      {{ direction }}
+    </button>
+  </div>
+
+  <div *ngIf="formatStyle === 'Degree Minute Second'" class="form-group">
+    <input
+      matInput
+      (input)="inputChange()"
+      type="number"
+      class="form-control whole"
+      required
+      [(ngModel)]="DMS_d"
+      id="ordinate"
+    />
+
+    <input
+      matInput
+      (input)="inputChange()"
+      type="number"
+      class="form-control whole"
+      required
+      [(ngModel)]="DMS_m"
+      id="ordinate"
+    />
+
+    <input
+      matInput
+      (input)="inputChange()"
+      type="number"
+      class="form-control whole"
+      required
+      [(ngModel)]="DMS_s"
+      id="ordinate"
+    />
+    <button mat-stroked-button (click)="directionButtonClick()">
+      {{ direction }}
+    </button>
+  </div>
+</div>
