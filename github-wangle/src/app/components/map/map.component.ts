@@ -6,23 +6,21 @@ import {
     Output,
     EventEmitter,
     ViewChild,
-    ViewChildren,
     AfterViewInit,
     OnDestroy,
     OnChanges,
     SimpleChanges,
-    ElementRef,
-    QueryList,
-    Query,
     HostListener,
+    ViewChildren,
 } from '@angular/core';
 import { Permits } from '../../models/';
 import { LatLngBounds, AgmInfoWindow } from '@agm/core';
 import { Subscription } from 'rxjs';
 import { format } from 'date-fns';
 import { Waypoint } from 'src/app/models/Waypoint';
-import { ValidationService } from 'src/app/services/ValidationService';
-import { FormControl } from '@angular/forms';
+import { CoordsClick } from 'src/app/models/CoordsClick';
+import { NotificationService } from 'src/app/services/notification.service';
+import { take } from 'rxjs/operators';
 
 declare let JNC: any;
 declare let google: any;
@@ -41,6 +39,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy
     @Input() permits: Permits;
     @Input() shouldWatchBounds: boolean;
     @Input() mini: boolean;
+    @Input() deviceId: string;
     @Output() RightClick = new EventEmitter<number[]>();
     @Output() LeftClick = new EventEmitter<void>();
     @Output() NoLocation = new EventEmitter<void>();
@@ -51,7 +50,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy
     lat: number;
     lon: number;
     mapType = 'roadmap';
-    useClusters = false;
+    @Input() useClusters = true;
     useNavionics = true;
     overlays: google.maps.MVCArray<google.maps.MapType>;
     navionics_nauticalchart_layer: any;
@@ -74,21 +73,34 @@ export class MapComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy
             elementType: 'labels',
             stylers: [
                 {
-                    visibility: 'off',
+                    visibility: 'on',
                 },
             ],
         },
     ];
-    constructor(private validationService: ValidationService) {}
+    constructor(private notificationService: NotificationService) {}
+
     ngOnInit(): void {
         return;
     }
+
+    @ViewChild('infoWind') openInfoWindow: google.maps.InfoWindow | AgmInfoWindow;
+    openInfoWindowWaypoint: Waypoint;
+    openThisWaypoint(wp: Waypoint): void {
+        this.openInfoWindowWaypoint = wp;
+        setTimeout(() => {
+            this.openInfoWindow?.open();
+        });
+    }
+
     ngAfterViewInit(): void {
         // marker is 27x43
         // latitude * 111139 = meters
         const s = this.agm.mapReady.subscribe((map) => this.setMapBounds(map));
         this.subscriptions.push(s);
-        this.shouldWatchBounds && this.watchBounds();
+        if (this.shouldWatchBounds) {
+            this.watchBounds();
+        }
     }
     ngOnChanges(changes: SimpleChanges): void {
         // TODO don't set map bounds if its not a new list
@@ -116,29 +128,44 @@ export class MapComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy
     }
 
     paddedBounds;
+    idleTimer;
+
     watchBounds(): void {
         // On map means marker is mostly on map
         const s = this.agm.boundsChange.subscribe((event) => {
-            const NE = event.getNorthEast();
-            const SW = event.getSouthWest();
-            const average_lng = (NE.lat() + SW.lat()) / 2;
-            const meters_per_pixel =
-                (156543.03392 * Math.cos((average_lng * Math.PI) / 180)) / Math.pow(2, this.zoom);
-            const marker_height_meters = 43 * meters_per_pixel;
-            const marker_width_meters = 27 * meters_per_pixel;
-            const latToChange = marker_height_meters / 111139;
-            const lngToChange = marker_width_meters / 111139;
-            const bounds: google.maps.LatLngBounds = new google.maps.LatLngBounds();
-            bounds.extend({
-                lat: SW.lat(),
-                lng: SW.lng() + lngToChange / 1,
-            });
-            bounds.extend({
-                lat: NE.lat() - latToChange,
-                lng: NE.lng() - lngToChange / 1,
-            });
-            this.paddedBounds = bounds;
-            this.setWaypointsOnMap(bounds);
+            const stuff = () => {
+                const NE = event.getNorthEast();
+                const SW = event.getSouthWest();
+                const average_lng = (NE.lat() + SW.lat()) / 2;
+                const meters_per_pixel =
+                    (156543.03392 * Math.cos((average_lng * Math.PI) / 180)) /
+                    Math.pow(2, this.zoom);
+                const marker_height_meters = 43 * meters_per_pixel;
+                const marker_width_meters = 27 * meters_per_pixel;
+                const latToChange = marker_height_meters / 111139;
+                const lngToChange = marker_width_meters / 111139;
+                const bounds: google.maps.LatLngBounds = new google.maps.LatLngBounds();
+                bounds.extend({
+                    lat: SW.lat(),
+                    lng: SW.lng() + lngToChange / 1,
+                });
+                bounds.extend({
+                    lat: NE.lat() - latToChange,
+                    lng: NE.lng() - lngToChange / 1,
+                });
+                this.paddedBounds = bounds;
+                this.setWaypointsOnMap(bounds);
+            };
+            if (!this.idleTimer) {
+                this.idleTimer = setTimeout(() => {
+                    stuff();
+                });
+            } else {
+                clearTimeout(this.idleTimer);
+                this.idleTimer = setTimeout(() => {
+                    stuff();
+                }, 100);
+            }
             // // @ts-ignore
             // let b = this.agmMap._mapsWrapper.getBounds();
         });
@@ -184,30 +211,19 @@ export class MapComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy
         map.fitBounds(bounds);
     }
 
-    @ViewChildren('infoWindowClusters') infoWindowsClusters;
-    @ViewChildren('infoWindowNoClusters') infoWindowsNoClusters;
-    prevInfoWindow = null;
     openWaypointInfoWindow(wp: Waypoint): void {
-        const infoWindows = this.useClusters
-            ? this.infoWindowsClusters
-            : this.infoWindowsNoClusters;
-        const infoWindow =
-            infoWindows._results[
-                this.waypoints.indexOf(this.waypoints.find((w) => w.waypointId == wp.waypointId))
-            ];
-        this.openInfoWindow(infoWindow);
+        this.openThisWaypoint(wp);
         this.centerMapOnWaypoint(wp);
     }
 
-    openInfoWindow(infoWindow: google.maps.InfoWindow | AgmInfoWindow): void {
-        if (this.prevInfoWindow) this.prevInfoWindow.close();
-        infoWindow.open();
-        this.prevInfoWindow = infoWindow;
-    }
+    // openInfoWindow(infoWindow: google.maps.InfoWindow | AgmInfoWindow): void {
+    //     if (this.prevInfoWindow) this.prevInfoWindow.close();
+    //     infoWindow.open();
+    //     this.prevInfoWindow = infoWindow;
+    // }
 
     closeFromWelcome(): void {
-        this.prevInfoWindow?.close();
-        this.prevInfoWindow = null;
+        this.openInfoWindowWaypoint = undefined;
     }
 
     centerMapOnCoords(lat: number, lon: number): void {
@@ -231,7 +247,6 @@ export class MapComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy
 
     toggleClusters(): void {
         this.useClusters = !this.useClusters;
-        this.prevInfoWindow = null;
     }
 
     editWaypoint(wp: Waypoint): void {
@@ -251,11 +266,24 @@ export class MapComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy
             this.overlays.insertAt(0, this.navionics_nauticalchart_layer);
         }
     }
-
-    onRightClick({ coords }: { coords: { lat: number; lng: number } }): void {
-        setTimeout(() => {
-            this.RightClick.emit([coords.lat, coords.lng]);
-        }, 10);
+    @ViewChildren('markerCard') markerCard;
+    onRightClick(event: CoordsClick): void {
+        this.markerCard.changes.pipe(take(1)).subscribe((a) => {
+            setTimeout(() => {
+                // a.last.dblClickSymbol();
+                a.last.dblClickTitle();
+            }, 500);
+        });
+        const newWp: Waypoint = {
+            name: 'New Waypoint',
+            latitude: event.coords.lat,
+            longitude: event.coords.lng,
+            symbol: 'Waypoint',
+            waypointId: '0',
+        };
+        this.waypoints.unshift(newWp);
+        this.WaypointEdited.emit(newWp);
+        this.openThisWaypoint(this.waypoints[0]);
         // return false;
     }
 
@@ -278,13 +306,15 @@ export class MapComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy
             if (this.clickTimerRef) this.toggleControls();
         }, 200);
     }
+
     handleMapDblClick(): void {
         this.clickTimerRef = null;
     }
+
     clusterClick(): void {
-        if (this.prevInfoWindow) this.prevInfoWindow.close();
         this.clickTimerRef = null;
     }
+
     toggleControls(): void {
         this.LeftClick.emit();
     }
@@ -326,66 +356,22 @@ export class MapComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy
         };
         this.EditWaypoint.emit(newWp);
     }
-    waypointBeingEdited: Waypoint;
-    waypointNameEdited: string;
-    waypointNameValid = true;
 
-    dblClickTitle(wp: Waypoint, event) {
-        console.log('double clidk');
-        this.waypointBeingEdited = wp;
-        this.waypointNameEdited = wp.name;
-        // setTimeout(() => {
-        //     const a = document.getElementById('editInput');
-        //     a.focus();
-        // }, 5);
+    saveName(wp: Waypoint): void {
+        this.WaypointEdited.emit(wp);
     }
-    editedNameChange(event) {
-        this.waypointNameValid = this.validationService.validateName(
-            this.waypointNameEdited,
-            null,
-            10
-        );
-        console.log(this.waypointNameEdited);
-    }
-    inputBlur() {
-        if (!this.waypointNameValid) {
-            this.waypointNameEdited = '';
-            this.waypointBeingEdited = undefined;
-            return;
-        }
-        this.waypointBeingEdited.name = this.waypointNameEdited;
-        this.saveName();
-    }
-    onInfoWindowClose() {
-        console.log('infowindow close');
-    }
-    //input key down
-    inputKeyDown(event) {
-        if (event.key === 'Escape') {
-            this.waypointNameEdited = '';
-            this.waypointBeingEdited = undefined;
-        }
-        if (event.key === 'Enter') {
-            this.saveName();
-        }
-    }
-    saveName() {
-        this.waypointBeingEdited.name = this.waypointNameEdited;
-        this.WaypointEdited.emit(this.waypointBeingEdited);
-        this.waypointNameEdited = '';
-        this.waypointBeingEdited = undefined;
-    }
+
     latHold: number;
     lonHold: number;
     waypointBeingDragged: Waypoint;
-    dragStart(event, wp: Waypoint, marker) {
+    dragStart(event: CoordsClick, wp: Waypoint): void {
         this.waypointBeingDragged = wp;
         this.latHold = wp.latitude;
         this.lonHold = wp.longitude;
         wp.latitude = undefined;
         wp.longitude = undefined;
     }
-    dragEnd(event, wp, marker) {
+    dragEnd(event: CoordsClick, wp: Waypoint): void {
         if (!this.dragMarkers) {
             setTimeout(() => {
                 this.dragMarkers = true;
@@ -415,7 +401,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy
             return;
         }
         if (key === 't') {
-            console.log('t up');
+            // this.notificationService.warning('End', 'Drag Mode Ended');
             this.dragMarkers = false;
             this.waypointBeingDragged = undefined;
         }
@@ -427,6 +413,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy
             return;
         }
         if (!this.dragMarkers && key === 't') {
+            // this.notificationService.warning('Start', 'Drag Mode Started');
             this.dragMarkers = true;
         }
     }

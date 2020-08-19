@@ -5,6 +5,7 @@ import { DeviceDetectorService } from 'ngx-device-detector';
 import { Router } from '@angular/router';
 import { setMobile } from './mobile';
 import { AuthService } from './auth/auth.service';
+import { WaitService } from './services/wait.service';
 
 @Component({
     selector: 'app-root',
@@ -17,9 +18,13 @@ export class AppComponent implements OnInit {
         private matDialog: MatDialog,
         private detectService: DeviceDetectorService,
         private router: Router,
-        public auth: AuthService
+        public auth: AuthService,
+        public waitService: WaitService
     ) {}
     ngOnInit(): void {
+        this.auth.isLoggedIn();
+
+        document.getElementById('placeholder').style.display = 'none';
         setMobile(this.detectService.isMobile());
 
         let h = window.innerHeight;

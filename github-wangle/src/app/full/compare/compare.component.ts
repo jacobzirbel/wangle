@@ -39,9 +39,7 @@ export class CompareComponent implements OnInit {
         this.waypointLists = this.data.waypointLists;
         this.selectedWaypointList = this.data.selectedWaypointList;
         this.importWaypoints = this.data.importWaypoints;
-        console.log(this.importWaypoints);
         this.getCompareWaypoints();
-        console.log(this.data);
     }
 
     getCompareWaypoints(): void {

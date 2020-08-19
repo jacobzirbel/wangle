@@ -1,0 +1,41 @@
+.notifications {
+    position: fixed;
+    top: 60px;
+    right: 0;
+    z-index: 10000;
+    min-width: 400px;
+    max-width: 95%;
+}
+.notifications .notification {
+    margin: 5px;
+    border-radius: 5px;
+    color: #fff;
+    overflow: hidden;
+}
+.notifications .notification .title {
+    background: rgba(0, 0, 0, 0.6);
+    padding-left: 10px;
+    font-weight: bold;
+}
+.notifications .notification .message {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.info {
+    background-color: rgba(189, 189, 189, 0.9);
+}
+
+.success {
+    background-color: rgba(27, 158, 119, 0.9);
+}
+
+.warning {
+    background-color: rgba(217, 95, 2, 0.9);
+}
+
+.error {
+    background-color: rgba(246, 71, 71, 0.9);
+}

@@ -5,7 +5,6 @@ import { WaypointList, Waypoint, Device } from 'src/app/models/';
 import { take } from 'rxjs/operators';
 import { DeviceService } from 'src/app/services/DeviceService';
 import { ConvertDialogComponent } from '../convert-dialog/convert-dialog.component';
-import { cloneDeep } from 'lodash';
 import { StringMap } from '@angular/compiler/src/compiler_facade_interface';
 
 @Component({
@@ -31,11 +30,16 @@ export class DownloadModalComponent implements OnInit {
     ) {}
     // this page should not alter original list
     ngOnInit(): void {
-        this.selectedWaypointList = cloneDeep(this.data.list);
+        this.selectedWaypointList = this.myCloneDeep(this.data.list);
         this.deviceList = this.deviceService.getDeviceList();
         this.selectedDevice = this.deviceService.getDevice('0');
         this.fileName = this.selectedWaypointList.name;
         this.selectionChange();
+    }
+    myCloneDeep(toClone) {
+        const string = JSON.stringify(toClone);
+        const copied = JSON.parse(string);
+        return copied;
     }
     selectionChange(): void {
         if (this.selectedDevice.id === '0') {

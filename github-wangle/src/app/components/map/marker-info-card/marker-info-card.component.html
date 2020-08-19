@@ -1,0 +1,64 @@
+<mat-card class="mat-card-info">
+    <mat-card-title
+        ><div *ngIf="!nameBeingEdited" (click)="allowEdit && dblClickTitle()">
+            {{ waypoint.name }}
+        </div>
+        <mat-form-field *ngIf="nameBeingEdited">
+            <input
+                matInput
+                id="name-input"
+                (input)="editedNameChange()"
+                (keyup)="inputKeyDown($event)"
+                (blur)="inputBlur()"
+                type="text"
+                [(ngModel)]="waypointNameEdited"
+            />
+        </mat-form-field>
+        <br />
+        <sub *ngIf="!waypointNameValid">Name invalid</sub>
+    </mat-card-title>
+    <mat-card-content>
+        <div *ngIf="!symbolBeingEdited" (click)="allowEdit && dblClickSymbol()">
+            {{ waypoint.symbol }}
+        </div>
+        <mat-form-field *ngIf="symbolBeingEdited">
+            <mat-label for="symbol">Symbol</mat-label>
+            <mat-select
+                #mySelect
+                type="text"
+                class="form-control"
+                required
+                (selectionChange)="symbolChange()"
+                [(value)]="waypointSymbolEdited"
+                id="symbol"
+            >
+                <input
+                    matInput
+                    id="symbol-search"
+                    autocomplete="off"
+                    style="height: 48px; padding: 0 16px;"
+                    placeholder="Search"
+                    (keyup)="onKey($event.target.value) && inputKeyDown($event)"
+                />
+                <mat-option
+                    *ngFor="let c of symbols"
+                    ng-init="c === waypointBeingEdited.symbol"
+                    [value]="c"
+                >
+                    {{ c }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+    </mat-card-content>
+    <mat-card-actions
+        ><button
+            mat-raised-button
+            color="primary"
+            *ngIf="allowEdit"
+            (click)="editWaypoint()"
+            style="width: 100%;"
+        >
+            Edit
+        </button></mat-card-actions
+    >
+</mat-card>

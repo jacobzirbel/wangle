@@ -79,7 +79,7 @@ import { MatCheckboxChange } from '@angular/material/checkbox';
 export class TableManageComponent implements OnInit, OnChanges {
     @Input() waypoints: Waypoint[];
     @Input() filterValue: string;
-    @Input() alreadySelected: Waypoint[] = [];
+    // @Input() alreadySelected: Waypoint[] = [];
     @Input() selection;
     @Output() SelectedChange = new EventEmitter<Waypoint>();
     @Output() MasterToggle = new EventEmitter<boolean>();
@@ -97,13 +97,14 @@ export class TableManageComponent implements OnInit, OnChanges {
         }
         if (changes.filterValue?.currentValue) {
             this.dataSource.filter = changes.filterValue.currentValue.trim().toLowerCase();
+            console.log(this.dataSource.filteredData);
         }
-        if (changes.alreadySelected?.currentValue) {
-            this.selection = new SelectionModel<Waypoint>(
-                true,
-                changes.alreadySelected.currentValue
-            );
-        }
+        // if (changes.alreadySelected?.currentValue) {
+        //     this.selection = new SelectionModel<Waypoint>(
+        //         true,
+        //         changes.alreadySelected.currentValue
+        //     );
+        // }
     }
     ngOnInit(): void {
         // this.selection = new SelectionModel<Waypoint>(true, this.alreadySelected);
@@ -115,10 +116,10 @@ export class TableManageComponent implements OnInit, OnChanges {
             this.SelectedChange.emit(row);
         }
     }
-    applyFilter(event: KeyboardEvent): void {
-        const filterValue = (event.target as HTMLInputElement).value;
-        this.dataSource.filter = filterValue.trim().toLowerCase();
-    }
+    // applyFilter(event: KeyboardEvent): void {
+    //     const filterValue = (event.target as HTMLInputElement).value;
+    //     this.dataSource.filter = filterValue.trim().toLowerCase();
+    // }
     isAllSelected(): boolean {
         return this.waypoints?.every((twp) => this.selection.selected.includes(twp));
     }

@@ -1,135 +1,88 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Injectable } from '@angular/core';
-import createAuth0Client from '@auth0/auth0-spa-js';
-import Auth0Client from '@auth0/auth0-spa-js/dist/typings/Auth0Client';
-import { config } from '../../../auth_config';
-import { from, of, Observable, BehaviorSubject, combineLatest, throwError } from 'rxjs';
-import { tap, catchError, concatMap, shareReplay } from 'rxjs/operators';
-import { Router } from '@angular/router';
-
+import {
+    UserManager,
+    User,
+    UserManagerSettings,
+    WebStorageStateStore,
+} from 'oidc-client';
+import { Subject } from 'rxjs';
 @Injectable({
     providedIn: 'root',
 })
 export class AuthService {
-    // Create an observable of Auth0 instance of client
-    auth0Client$ = (from(
-        createAuth0Client({
-            domain: config.domain,
-            client_id: config.clientId,
-            redirect_uri: `${window.location.origin}`,
-            audience: config.audienceId,
-        })
-    ) as Observable<Auth0Client>).pipe(
-        shareReplay(1), // Every subscription receives the same shared value
-        catchError((err) => throwError(err))
-    );
-    // Define observables for SDK methods that return promises by default
-    // For each Auth0 SDK method, first ensure the client instance is ready
-    // concatMap: Using the client instance, call SDK method; SDK returns a promise
-    // from: Convert that resulting promise into an observable
-    isAuthenticated$ = this.auth0Client$.pipe(
-        concatMap((client: Auth0Client) => from(client.isAuthenticated())),
-        tap((res) => {
-            this.loggedIn = !!res;
-        })
-    );
-    handleRedirectCallback$ = this.auth0Client$.pipe(
-        concatMap((client: Auth0Client) => from(client.handleRedirectCallback()))
-    );
-    // Create subject and public observable of user profile data
-    private userProfileSubject$ = new BehaviorSubject<any>(null);
-    userProfile$ = this.userProfileSubject$.asObservable();
-    // Create a local property for login status
-    loggedIn: boolean = null;
+    private userManager: UserManager;
+    private user: User;
+    private loginChangedSubject = new Subject<boolean>();
 
-    constructor(private router: Router) {
-        // On initial load, check authentication state with authorization server
-        // Set up local auth streams if user is already authenticated
-        this.localAuthSetup();
-        // Handle redirect from Auth0 login
-        this.handleAuthCallback();
+    loginChanged = this.loginChangedSubject.asObservable();
+
+    loggedIn: boolean;
+    constructor() {
+        const stsAuthority = 'xx';
+        const clientId = 'xx';
+        const clientRoot = `${window.location.protocol}//${window.location.host}/`;
+
+        const stsSettings: UserManagerSettings = {
+            authority: stsAuthority, //stsAuthority
+            client_id: clientId,
+            redirect_uri: `${clientRoot}signin-callback`,
+            scope: 'openid profile',
+            response_type: 'code',
+            userStore: new WebStorageStateStore({ store: window.localStorage }),
+            metadata: {
+                issuer: stsAuthority,
+                authorization_endpoint: `${stsAuthority}authorize?audience=https://prowaypoint.azurewebsites.net`,
+                jwks_uri: `${stsAuthority}.well-known/jwks.json`,
+                token_endpoint: `${stsAuthority}oauth/token`,
+                userinfo_endpoint: `${stsAuthority}userinfo`,
+                end_session_endpoint: `${stsAuthority}v2/logout?client_id=${clientId}&returnTo=${encodeURI(
+                    clientRoot
+                )}signout-callback`,
+            },
+        };
+        this.userManager = new UserManager(stsSettings);
     }
 
-    // When calling, options can be passed if desired
-    // https://auth0.github.io/auth0-spa-js/classes/auth0client.html#getuser
-    getUser$(options?): Observable<any> {
-        return this.auth0Client$.pipe(
-            concatMap((client: Auth0Client) => from(client.getUser(options))),
-            tap((user) => this.userProfileSubject$.next(user))
-        );
+    login() {
+        return this.userManager.signinRedirect();
     }
 
-    private localAuthSetup() {
-        // This should only be called on app initialization
-        // Set up local authentication streams
-        const checkAuth$ = this.isAuthenticated$.pipe(
-            concatMap((loggedIn: boolean) => {
-                if (loggedIn) {
-                    // If authenticated, get user and set in app
-                    // NOTE: you could pass options here if needed
-                    return this.getUser$();
-                }
-                // If not authenticated, return stream that emits 'false'
-                return of(loggedIn);
-            })
-        );
-        checkAuth$.subscribe();
+    isLoggedIn(): Promise<boolean> {
+        return this.userManager.getUser().then((user) => {
+            const userCurrent = !!user && !user.expired;
+            if (this.user !== user) {
+                this.loggedIn = userCurrent;
+                this.loginChangedSubject.next(userCurrent);
+            }
+            this.user = user;
+            return userCurrent;
+        });
     }
-
-    login(redirectPath = '/'): void {
-        // A desired redirect path can be passed to login method
-        // (e.g., from a route guard)
-        // Ensure Auth0 client instance exists
-        this.auth0Client$.subscribe((client: Auth0Client) => {
-            // Call method to log in
-            client.loginWithRedirect({
-                redirect_uri: `${window.location.origin}`,
-                appState: { target: redirectPath },
-            });
+    completeLogin() {
+        return this.userManager.signinRedirectCallback().then((user) => {
+            this.user = user;
+            this.loggedIn = !!user && !user.expired;
+            this.loginChangedSubject.next(!!user && !user.expired);
+            return user;
         });
     }
 
-    private handleAuthCallback() {
-        // Call when app reloads after user logs in with Auth0
-        const params = window.location.search;
-        if (params.includes('code=') && params.includes('state=')) {
-            let targetRoute: string; // Path to redirect to after login processed
-            const authComplete$ = this.handleRedirectCallback$.pipe(
-                // Have client, now call method to handle auth callback redirect
-                tap((cbRes) => {
-                    // Get and set target redirect route from callback results
-                    targetRoute =
-                        cbRes.appState && cbRes.appState.target ? cbRes.appState.target : '/';
-                }),
-                concatMap(() => {
-                    // Redirect callback complete; get user and login status
-                    return combineLatest([this.getUser$(), this.isAuthenticated$]);
-                })
-            );
-            // Subscribe to authentication completion observable
-            // Response will be an array of user and login status
-            authComplete$.subscribe(([user, loggedIn]) => {
-                // Redirect to target route after callback processing
-                this.router.navigate([targetRoute]);
-            });
-        }
+    logout() {
+        this.userManager.signoutRedirect();
     }
 
-    logout(): void {
-        // Ensure Auth0 client instance exists
-        this.auth0Client$.subscribe((client: Auth0Client) => {
-            // Call method to log out
-            client.logout({
-                client_id: config.clientId,
-                returnTo: `${window.location.origin}`,
-            });
-        });
+    completeLogout() {
+        this.user = null;
+        return this.userManager.signoutRedirectCallback();
     }
-    getTokenSilently$(options?): Observable<string> {
-        return this.auth0Client$.pipe(
-            concatMap((client: Auth0Client) => from(client.getTokenSilently(options)))
-        );
+
+    getAccessToken() {
+        return this.userManager.getUser().then((user) => {
+            if (!!user && !user.expired) {
+                return user.access_token;
+            } else {
+                return null;
+            }
+        });
     }
 }

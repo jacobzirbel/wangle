@@ -118,8 +118,8 @@
                     mat-button
                     class="top-a"
                     [routerLink]="['/']"
-                    (click)="auth.logout()"
-                    [style.backgroundColor]="'darkgreen'"
+                    (click)="logout()"
+                    [style.backgroundColor]="'red'"
                 >
                     Log Out
                 </a>
@@ -164,7 +164,7 @@
                     mat-flat-button
                     color="warn"
                     [routerLink]="['/']"
-                    (click)="auth.logout()"
+                    (click)="logout()"
                 >
                     Log Out
                 </a>

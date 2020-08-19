@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject, BehaviorSubject } from 'rxjs';
-import { lists as findLists } from './welcome/find/find-lists.js';
+import { lists as findLists } from './welcome/find/find-lists';
 import { WaypointList, Waypoint, Permits } from './models/';
 
 @Injectable({

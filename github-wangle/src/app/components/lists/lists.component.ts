@@ -4,7 +4,6 @@ import {
     Output,
     EventEmitter,
     Input,
-    AfterViewInit,
     OnDestroy,
     ChangeDetectionStrategy,
     ChangeDetectorRef,
@@ -90,7 +89,6 @@ export class ListsComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
-        console.log(this.subscriptions.length);
         this.subscriptions.forEach((sub) => sub.unsubscribe());
     }
     waypointListSelected(selected: WaypointList): void {
@@ -102,7 +100,6 @@ export class ListsComponent implements OnInit, OnDestroy {
         this.stateService.deleteList(list.waypointListId);
     }
     editList(list: WaypointList): void {
-        console.log(this.router.url);
         if (this.router.url !== '/full') alert('error, editList');
         const dialogRef = this.matDialog.open(EditWaypointListComponent, {
             data: { waypointList: Object.assign({}, list) },

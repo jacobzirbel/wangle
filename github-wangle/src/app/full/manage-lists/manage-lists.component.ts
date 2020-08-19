@@ -48,7 +48,7 @@ export class ManageListsComponent implements OnInit {
         this.waypointLists = lists;
         this.permits = permits;
         this.route = route;
-        const id = localStorage.getItem('selectedList');
+        const id = localStorage.getItem('fullSelectedList');
         this.currentList =
             this.waypointLists.find((wpl) => wpl.waypointListId == id) || this.waypointLists[0];
         this.mapWaypoints = [...this.currentList.waypoints];
@@ -72,12 +72,10 @@ export class ManageListsComponent implements OnInit {
                 groups.push(group);
             }
         });
-        console.log(groups);
         const dialogRef = this.matDialog.open(DuplicatesDialogComponent, {
             data: { groups },
         });
         dialogRef.afterClosed().subscribe((result) => {
-            console.log(result);
             this.stateService.deleteArrayOfWaypoints(
                 result.originals,
                 this.currentList.waypointListId
@@ -133,7 +131,7 @@ export class ManageListsComponent implements OnInit {
         this.waypointsSelected = [...this.selection.selected];
     }
     waypointListSelected(list: WaypointList): void {
-        localStorage.setItem('selectedList', list.waypointListId);
+        localStorage.setItem('fullSelectedList', list.waypointListId);
         this.currentList = list;
         this.refreshTables();
         this.filterValue = '';

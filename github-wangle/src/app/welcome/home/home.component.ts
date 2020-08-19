@@ -17,14 +17,7 @@ export class HomeComponent implements OnInit {
     constructor(public auth: AuthService, private router: Router, private matDialog: MatDialog) {}
 
     ngOnInit(): void {
-        this.auth.userProfile$.subscribe(
-            (res: Profile) => {
-                this.profile = res;
-            },
-            (err) => {
-                throw err;
-            }
-        );
+        return;
     }
     login(): void {
         const dialogRef = this.matDialog.open(AlertDialogComponent, {
@@ -38,7 +31,8 @@ export class HomeComponent implements OnInit {
         dialogRef.updatePosition({ top: '23vh' });
         dialogRef.afterClosed().subscribe((entered: number) => {
             if (entered == 1) {
-                this.router.navigateByUrl('/full');
+                // this.router.navigateByUrl('/full');
+                this.auth.login();
             }
             if (entered == 0) this.fullLogout();
         });

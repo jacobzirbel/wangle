@@ -6,7 +6,6 @@ import { MaterialModule } from './material/material.module';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { WaypointRepoService } from './services/WaypointRepoService';
-import { NotificationService } from './services/NotificationService';
 import { ValidationService } from './services/ValidationService';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { StateService } from './state.service';
@@ -51,10 +50,9 @@ import { DownloadModalComponent } from './components/download-modal/download-mod
 import { PointsDragComponent } from './components/points/points-drag.component';
 import { PointsSheetComponent } from './components/points/points-sheet.component';
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { ModalModule } from 'ng-modal-lib';
 import { MiniComponent } from './components/map/mini.component';
 import { GeolocationService } from './services/geolocation.service';
-import { AuthGuard } from './auth/auth.guard';
+// import { AuthGuard } from './auth/auth.guard';
 import { AuthService } from './auth/auth.service';
 import { ManageListsComponent } from './full/manage-lists/manage-lists.component';
 import { TableManageComponent } from './full/manage-lists/table-manage.component';
@@ -62,7 +60,12 @@ import { ListsTableComponent } from './components/lists/lists-table/lists-table.
 import { AdminComponent } from './admin/admin.component';
 import { AutoFocusDirective } from './auto-focus.directive';
 import { UploadBtnComponent } from './components/upload-btn/upload-btn.component';
+import { SigninRedirectCallbackComponent } from './auth/signin-redirect-callback.component';
+import { SignoutRedirectCallbackComponent } from './auth/signout-redirect-callback.component';
 import { DuplicatesDialogComponent } from './components/duplicates-dialog/duplicates-dialog.component';
+import { MarkerInfoCardComponent } from './components/map/marker-info-card/marker-info-card.component';
+import { NotificationComponent } from './components/notification/notification.component';
+import { NotificationService } from './services/notification.service';
 @NgModule({
     declarations: [
         AppComponent,
@@ -99,7 +102,11 @@ import { DuplicatesDialogComponent } from './components/duplicates-dialog/duplic
         AdminComponent,
         AutoFocusDirective,
         UploadBtnComponent,
+        SigninRedirectCallbackComponent,
+        SignoutRedirectCallbackComponent,
         DuplicatesDialogComponent,
+        MarkerInfoCardComponent,
+        NotificationComponent,
     ],
     imports: [
         BrowserModule,
@@ -121,14 +128,12 @@ import { DuplicatesDialogComponent } from './components/duplicates-dialog/duplic
         MatPaginatorModule,
         MatSortModule,
         DragDropModule,
-        ModalModule,
     ],
     providers: [
         AuthService,
-        AuthGuard,
+        // AuthGuard,
         InterceptorService,
         WaypointRepoService,
-        NotificationService,
         ValidationService,
         StateService,
         SharedService,
@@ -138,8 +143,8 @@ import { DuplicatesDialogComponent } from './components/duplicates-dialog/duplic
             multi: true,
         },
         MapComponent,
-
         GeolocationService,
+        NotificationService,
     ],
     bootstrap: [AppComponent],
     entryComponents: [ConvertDialogComponent, PointsComponent],

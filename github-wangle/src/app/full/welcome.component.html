@@ -6,7 +6,7 @@
         [allowEdit]="permits.wpEdit"
         [waypoints]="selectedWaypointList.waypoints"
         [permits]="permits"
-        (RightClick)="addFromMap($event)"
+        [deviceId]="selectedWaypointList.deviceId"
         (LeftClick)="showControls = !showControls"
         (NoLocation)="showLocationButton = false"
         (EditWaypoint)="waypointMethods.edit($event)"

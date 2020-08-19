@@ -1,10 +1,12 @@
 import { WelcomeComponent } from './app/full/welcome.component';
 import { InitDataResolver, FullDataResolver } from './app/services/init-data-resolver.service';
 import { HomeComponent } from './app/welcome/home/home.component';
-import { AuthGuard } from './app/auth/auth.guard';
+// import { AuthGuard } from './app/auth/auth.guard';
 import { ToolsComponent } from './app/tools/tools.component';
 import { ManageListsComponent } from './app/full/manage-lists/manage-lists.component';
 import { AdminComponent } from './app/admin/admin.component';
+import { SigninRedirectCallbackComponent } from './app/auth/signin-redirect-callback.component';
+import { SignoutRedirectCallbackComponent } from './app/auth/signout-redirect-callback.component';
 
 export const appRoutes = [
     {
@@ -34,7 +36,7 @@ export const appRoutes = [
     { path: 'home', component: HomeComponent },
     {
         path: 'full',
-        canActivate: [AuthGuard],
+        // canActivate: [AuthGuard],
         resolve: { initData: FullDataResolver },
         children: [
             { path: '', component: WelcomeComponent },
@@ -45,5 +47,11 @@ export const appRoutes = [
         path: 'tools',
         component: ToolsComponent,
     },
+    {
+        path: 'admin',
+        component: AdminComponent,
+    },
+    { path: 'signin-callback', component: SigninRedirectCallbackComponent },
+    { path: 'signout-callback', component: SignoutRedirectCallbackComponent },
     { path: '**', pathMatch: 'full', redirectTo: 'home' },
 ];

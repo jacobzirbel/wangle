@@ -19,6 +19,7 @@ import { MatMenuTrigger } from '@angular/material/menu';
 import { PreparedWaypointLists } from '../models/PreparedWaypointLists';
 import { PointsDismissAction } from 'PointsDismissAction';
 import { Waypoint } from '../models/Waypoint';
+import { NotificationService } from '../services/notification.service';
 
 @Component({
     selector: 'app-welcome',
@@ -52,7 +53,8 @@ export class WelcomeComponent implements OnInit, OnDestroy {
         private matDialog: MatDialog,
         private sharedService: SharedService,
         public auth: AuthService,
-        private elementRef: ElementRef
+        private elementRef: ElementRef,
+        private notificationService: NotificationService
     ) {
         this.mobile = isMobile;
         this.showControls = true;
@@ -70,7 +72,11 @@ export class WelcomeComponent implements OnInit, OnDestroy {
         if ((<HTMLInputElement>target).tagName === 'INPUT') {
             return;
         }
-        if (this.appMap.waypointBeingDragged || this.appMap.waypointNameEdited) {
+        if ((<HTMLInputElement>target).tagName === 'MAT-SELECT') {
+            return;
+        }
+        if (this.appMap.waypointBeingDragged) {
+            //this.appMap.waypointNameEdited
             return;
         }
         const mapTypes = ['roadmap', 'hybrid', 'terrain'];
@@ -109,14 +115,14 @@ export class WelcomeComponent implements OnInit, OnDestroy {
         this.waypointLists = lists;
         this.permits = permits;
         this.route = route;
-        const id = localStorage.getItem('selectedList');
+        const id = localStorage.getItem(this.route + 'SelectedList');
         this.selectedWaypointList =
             this.waypointLists.find((wpl) => wpl.waypointListId == id) || this.waypointLists[0];
         this.sharedService.nextLists(this.waypointLists);
         this.sharedService.nextPermits(this.permits);
         this.sharedService.nextSelectedList(this.selectedWaypointList);
         const slSub = this.sharedService.selectedList$.subscribe((list: WaypointList) => {
-            localStorage.setItem('selectedList', list.waypointListId);
+            localStorage.setItem(this.route + 'SelectedList', list.waypointListId);
             this.selectedWaypointList = list;
         });
         this.subscriptions.push(slSub);
@@ -125,19 +131,6 @@ export class WelcomeComponent implements OnInit, OnDestroy {
         this.pointsDialogRef = undefined;
     }
 
-    addFromMap(coords: number[]): void {
-        if (!this.permits.wpEdit) return;
-        if (!coords[0] || (!coords[1] && !coords.includes(0))) alert('addFromMaperror');
-
-        const newWp: Waypoint = {
-            name: 'New Waypoint',
-            latitude: coords[0] || 45,
-            longitude: coords[1] || 90,
-            symbol: 'Waypoint',
-            waypointId: '0',
-        };
-        this.openEditDialog(newWp);
-    }
     openEditDialog(newWp: Waypoint): void {
         const dialogRef = this.matDialog.open(EditWaypointComponent, {
             panelClass: 'width-dialog',
@@ -149,9 +142,12 @@ export class WelcomeComponent implements OnInit, OnDestroy {
         });
         dialogRef.afterClosed().subscribe((result) => {
             if (!result?.save) return;
-            if (this.route === 'full') this.full.save(result.save, result.listId);
-            if (this.basicRoutes.includes(this.route))
-                this.basic.save(newWp, result.save, result.listId);
+            if (this.route === 'full') {
+                this.full.save(result.save);
+            }
+            if (this.basicRoutes.includes(this.route)) {
+                this.basic.save(newWp, result.save);
+            }
         });
     }
     pointsSheetRef;
@@ -259,28 +255,22 @@ export class WelcomeComponent implements OnInit, OnDestroy {
                 if (result.save) {
                     if (this.route === 'full') this.full.edit(result.save);
                     if (this.basicRoutes.includes(this.route)) {
-                        this.basic.save(wp, result.save, result.listId);
+                        this.basic.save(wp, result.save);
                     }
                 } else if (result.delete) {
-                    if (this.route === 'full') this.full.delete(result.delete, result.listId);
+                    if (this.route === 'full') this.full.delete(result.delete);
                     if (this.basicRoutes.includes(this.route)) {
                         this.basic.delete(wp);
                     }
                 }
             });
         },
-        save: (wpChangedName): void => {
-            console.log(wpChangedName);
+        save: (wp: Waypoint): void => {
             if (this.route === 'full') {
-                this.full.edit(wpChangedName);
+                this.full.edit(wp);
             }
             if (this.basicRoutes.includes(this.route)) {
-                console.log('basicroutes');
-                this.basic.save(
-                    wpChangedName,
-                    wpChangedName,
-                    this.selectedWaypointList.waypointListId
-                );
+                this.basic.save(wp, wp);
             }
         },
         center: (wp: Waypoint): void => {
@@ -289,10 +279,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     };
 
     basic = {
-        save: (original: Waypoint, wp: Waypoint, listId: string): void => {
-            if (listId != this.selectedWaypointList.waypointListId) {
-                alert('Error: listIds do not match');
-            }
+        save: (original: Waypoint, wp: Waypoint): void => {
             const brandNew = !this.selectedWaypointList.waypoints
                 .map((e) => e.waypointId)
                 .includes(wp.waypointId);
@@ -302,7 +289,6 @@ export class WelcomeComponent implements OnInit, OnDestroy {
             } else {
                 Object.assign(original, wp);
             }
-            console.log('setItem');
             localStorage.setItem(
                 this.route + 'Waypoints',
                 JSON.stringify(this.selectedWaypointList.waypoints)
@@ -319,14 +305,19 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     };
 
     full = {
-        save: (wp: Waypoint, listId: string): void => {
+        save: (wp: Waypoint): void => {
+            const listId = this.selectedWaypointList.waypointListId;
             this.stateService.addWaypoint(wp, listId).then((e) => console.log(e));
         },
         edit: (wp: Waypoint): void => {
+            if (!wp.waypointListId) {
+                wp.waypointListId = this.selectedWaypointList.waypointListId;
+            }
             this.stateService.editWaypoint(wp);
         },
 
-        delete: (wp: Waypoint, listId: string): void => {
+        delete: (wp: Waypoint): void => {
+            const listId = this.selectedWaypointList.waypointListId;
             this.stateService.deleteWaypoint(wp.waypointId, listId);
         },
     };

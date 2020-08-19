@@ -7,6 +7,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { PreparedWaypointLists } from 'src/app/models/PreparedWaypointLists';
 import { Waypoint } from 'src/app/models/Waypoint';
 import { CompareComponent } from 'src/app/full/compare/compare.component';
+import { WaitService } from 'src/app/services/wait.service';
+import { Notif } from 'src/app/models/Notif';
+import { NotificationService } from 'src/app/services/notification.service';
 
 @Component({
     selector: 'upload-btn',
@@ -23,7 +26,9 @@ export class UploadBtnComponent implements OnInit {
         private waypointService: WaypointRepoService,
         private sharedService: SharedService,
         private stateService: StateService,
-        private matDialog: MatDialog
+        private matDialog: MatDialog,
+        private waitService: WaitService,
+        private notificationService: NotificationService
     ) {
         // this.isFull = this.route.includes('full');
     }
@@ -32,14 +37,17 @@ export class UploadBtnComponent implements OnInit {
         return;
     }
     handleFileInput(files: FileList): void {
-        const handleReader = function (evt: ProgressEvent) {
+        const handleReader = (evt: ProgressEvent) => {
             this.waypointService
                 // TODO check type of second arg
-                .postInputFile(files[0].name, (<FileReader>evt.target).result)
+                .postInputFile(files[0].name, (<FileReader>evt.target).result + '')
                 .subscribe(
                     (result) => {
                         if (!result) {
-                            alert('No waypoints in file');
+                            this.notificationService.error(
+                                'Error',
+                                'There were no waypoints in file'
+                            );
                             return;
                         } else {
                             if (this.isFull) {
@@ -58,7 +66,7 @@ export class UploadBtnComponent implements OnInit {
         if (files.item(0)) {
             let reader = new FileReader();
             reader.readAsDataURL(files.item(0));
-            reader.onload = handleReader.bind(this);
+            reader.onload = handleReader;
             reader.onerror = function () {
                 alert('error reading file');
             };
@@ -84,7 +92,6 @@ export class UploadBtnComponent implements OnInit {
             },
         });
         dialogRef.afterClosed().subscribe((result) => {
-            console.log(result);
             if (result) this.saveForFull(result);
         });
     }

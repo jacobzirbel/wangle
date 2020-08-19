@@ -5,5 +5,7 @@ export interface Waypoint {
     latitude: number;
     longitude: number;
     symbol: string;
+    description?: string;
     valid?: boolean;
+    dateTime?: any;
 }

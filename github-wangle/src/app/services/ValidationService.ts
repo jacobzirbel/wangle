@@ -70,6 +70,9 @@ export class ValidationService {
     }
 
     getAllowedSymbols(deviceId?: string): string[] {
+        if (deviceId == '0') {
+            return [...this.getAllowedSymbols('1'), ...this.getAllowedSymbols('2')];
+        }
         return this.deviceService
             .getDeviceList()
             .find((d) => d.id == deviceId)

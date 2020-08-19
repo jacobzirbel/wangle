@@ -1,51 +1,52 @@
 <div class="container hide-scroll">
-  <div class="button-container">
-    <div class="g-button" (click)="routePress('find')">
-      <h5>Find Places to fish</h5>
-      <p>Look at a few of our best fishing spots.</p>
+    <div class="button-container">
+        <div class="g-button" (click)="routePress('find')">
+            <h5>Find Places to fish</h5>
+            <p>Look at a few of our best fishing spots.</p>
+        </div>
+        <div class="g-button" (click)="routePress('view')">
+            <h5>View waypoints from your SD card</h5>
+            <p>Upload a GPX file and see your waypoints on a map</p>
+        </div>
+        <div [className]="mobile ? 'd-button' : 'g-button'" (click)="routePress('create')">
+            <h5>Create a set of waypoints</h5>
+            <p *ngIf="!mobile">
+                Create and download a GPX file
+            </p>
+            <h5 *ngIf="mobile">
+                On mobile? Create a GPX file by adding waypoints from your phone
+            </h5>
+        </div>
     </div>
-    <div class="g-button" (click)="routePress('view')">
-      <h5>View waypoints from your SD card</h5>
-      <p>Upload a GPX file and see your waypoints on a map</p>
+    <h4>
+        This application helps you accumulate, manage and share information to help you catch more
+        fish.
+    </h4>
+    <h5>
+        To ask for help or request a feature
+        <a href="https://wangleworkspace.slack.com/" target="_blank">send us a message on slack</a>
+        <br />
+        <p>or email us at: wangle.waypoints@gmail.com</p>
+    </h5>
+    <hr />
+    <div *ngIf="true">
+        <div *ngIf="!auth.loggedIn">
+            <p>
+                Please contact us if you would like to join our beta program.
+            </p>
+            <button mat-button class="" (click)="login()">
+                Log in
+            </button>
+        </div>
+        <div *ngIf="auth.loggedIn">
+            <!-- <p>Logged in as: {{ profile.name }}</p> -->
+            <button mat-button [routerLink]="['/full']">My Waypoints</button>
+        </div>
     </div>
-    <div [className]="mobile ? 'd-button' : 'g-button'" (click)="routePress('create')">
-      <h5>Create a set of waypoints</h5>
-      <p *ngIf="!mobile">
-        Create and download a GPX file
-      </p>
-      <h5 *ngIf="mobile">
-        On mobile? Create a GPX file by adding waypoints from your phone
-      </h5>
-    </div>
-  </div>
-  <h4>
-    This application helps you accumulate, manage and share information to help you catch more fish.
-  </h4>
-  <h5>
-    To ask for help or request a feature
-    <a href="https://wangleworkspace.slack.com/" target="_blank">send us a message on slack</a>
     <br />
-    <p>or email us at: wangle.waypoints@gmail.com</p>
-  </h5>
-  <hr />
-  <div *ngIf="true">
-    <div *ngIf="!auth.loggedIn">
-      <p>
-        Please contact us if you would like to join our beta program.
-      </p>
-      <button mat-button class="" (click)="login()">
-        Log in
-      </button>
-    </div>
-    <div *ngIf="auth.loggedIn">
-      <p>Logged in as: {{ profile.name }}</p>
-      <button mat-button [routerLink]="['/full']">My Waypoints</button>
-    </div>
-  </div>
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
-  <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
 </div>

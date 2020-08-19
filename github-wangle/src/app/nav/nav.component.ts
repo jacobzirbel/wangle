@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
 export class NavComponent implements OnInit {
     listName: string;
     sidebar: boolean;
+    isLoggedIn: boolean;
 
     constructor(public auth: AuthService, public router: Router, private cdf: ChangeDetectorRef) {
         this.sidebar = window.innerWidth < 960;
@@ -23,6 +24,12 @@ export class NavComponent implements OnInit {
 
     ngOnInit(): void {
         return;
+    }
+    login() {
+        this.auth.login();
+    }
+    logout() {
+        this.auth.logout();
     }
     toggleSide(): void {
         if (this.sidebar) this.sidenav.toggle();

@@ -42,52 +42,26 @@
             <agm-marker
                 #marker
                 [markerDraggable]="permits?.wpEdit && dragMarkers"
-                (dragStart)="dragStart($event, wp, marker)"
-                (dragEnd)="dragEnd($event, wp, marker)"
+                (dragStart)="dragStart($event, wp)"
+                (dragEnd)="dragEnd($event, wp)"
                 [latitude]="wp.latitude"
                 [longitude]="wp.longitude"
                 [label]="wp.name"
-                (markerClick)="openInfoWindow(infoWindowNoClusters)"
+                (markerClick)="openThisWaypoint(wp)"
             >
                 <agm-info-window
+                    #infoWind
+                    *ngIf="openInfoWindowWaypoint === wp"
                     [disableAutoPan]="false"
-                    #infoWindowNoClusters
-                    (infoWindowClose)="onInfoWindowClose()"
                 >
-                    <mat-card class="mat-card-info">
-                        <mat-card-title
-                            ><div
-                                *ngIf="!waypointNameEdited"
-                                (dblclick)="permits?.wpEdit && dblClickTitle(wp, $event)"
-                            >
-                                {{ wp.name }}
-                            </div>
-
-                            <input
-                                *ngIf="waypointBeingEdited"
-                                matInput
-                                (input)="editedNameChange($event)"
-                                (keydown)="inputKeyDown($event)"
-                                (blur)="inputBlur()"
-                                type="text"
-                                [(ngModel)]="waypointNameEdited"
-                            />
-                            <br />
-                            <sub *ngIf="!waypointNameValid">Name invalid</sub>
-                        </mat-card-title>
-                        <mat-card-content>{{ wp.symbol }}</mat-card-content>
-                        <mat-card-actions
-                            ><button
-                                mat-raised-button
-                                color="primary"
-                                *ngIf="allowEdit"
-                                (click)="editWaypoint(wp)"
-                                style="width: 100%;"
-                            >
-                                Edit
-                            </button></mat-card-actions
-                        >
-                    </mat-card>
+                    <marker-info-card
+                        #markerCard
+                        (SaveWaypoint)="saveName($event)"
+                        (StartEdit)="editWaypoint($event)"
+                        [allowEdit]="permits?.wpEdit"
+                        [waypoint]="wp"
+                        [deviceId]="deviceId"
+                    ></marker-info-card>
                 </agm-info-window>
             </agm-marker>
         </div>
@@ -103,27 +77,27 @@
             <div *ngFor="let wp of waypointsOnMap || waypoints">
                 <agm-marker
                     #marker
+                    [markerDraggable]="permits?.wpEdit && dragMarkers"
+                    (dragStart)="dragStart($event, wp)"
+                    (dragEnd)="dragEnd($event, wp)"
                     [latitude]="wp.latitude"
                     [longitude]="wp.longitude"
-                    (markerClick)="openInfoWindow(infoWindowClusters)"
                     [label]="wp.name"
+                    (markerClick)="openThisWaypoint(wp)"
                 >
-                    <agm-info-window [disableAutoPan]="false" #infoWindowClusters>
-                        <mat-card class="mat-card-info">
-                            <mat-card-title>{{ wp.name }}</mat-card-title>
-                            <mat-card-content>{{ wp.symbol }}</mat-card-content>
-                            <mat-card-actions
-                                ><button
-                                    mat-raised-button
-                                    color="primary"
-                                    *ngIf="allowEdit"
-                                    (click)="editWaypoint(wp)"
-                                    style="width: 100%;"
-                                >
-                                    Edit
-                                </button></mat-card-actions
-                            >
-                        </mat-card>
+                    <agm-info-window
+                        #infoWind
+                        *ngIf="openInfoWindowWaypoint === wp"
+                        [disableAutoPan]="false"
+                    >
+                        <marker-info-card
+                            #markerCard
+                            (SaveWaypoint)="saveName($event)"
+                            (StartEdit)="editWaypoint($event)"
+                            [allowEdit]="permits?.wpEdit"
+                            [waypoint]="wp"
+                            [deviceId]="deviceId"
+                        ></marker-info-card>
                     </agm-info-window>
                 </agm-marker>
             </div>
