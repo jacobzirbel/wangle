@@ -10,6 +10,9 @@
             >
                 List Options
             </button>
+            <button mat-raised-button color="primary" (click)="startManage()">
+                Manage Lists
+            </button>
             <mat-menu #belowMenu="matMenu" yPosition="below">
                 <button mat-menu-item>
                     <fa-icon [icon]="faAdd" (click)="addWaypointList()"></fa-icon>&nbsp;<a
@@ -40,7 +43,7 @@
             [selectedWaypointList]="selectedWaypointList"
             [waypointLists]="waypointLists"
             [route]="route"
-            [isFull]="isFull()"
+            [isFull]="route === 'full'"
         ></upload-btn>
         <app-lists-table
             [waypointLists]="waypointLists"
@@ -51,18 +54,23 @@
     <!--  -->
     <!-- TOP BAR -->
     <div *ngIf="!sidebar" class="auto-width">
-        <mat-select
-            style="width: fit-content;"
-            class="lists-toolbar"
-            [(value)]="selectedWaypointList"
-            (selectionChange)="waypointListSelected(selectedWaypointList)"
-        >
-            <mat-option
-                [value]="list"
-                *ngFor="let list of waypointLists"
+        <div *ngIf="waypointLists.length > 1; else singleList">
+            <mat-select
                 style="width: fit-content;"
-                >{{ list.name }}</mat-option
+                class="lists-toolbar"
+                [(value)]="selectedWaypointList"
+                (selectionChange)="waypointListSelected(selectedWaypointList)"
             >
-        </mat-select>
+                <mat-option
+                    [value]="list"
+                    *ngFor="let list of waypointLists"
+                    style="width: fit-content;"
+                    >{{ list.name }}</mat-option
+                >
+            </mat-select>
+        </div>
+        <ng-template #singleList>
+            <div>{{ waypointLists[0].name }}</div>
+        </ng-template>
     </div>
 </div>

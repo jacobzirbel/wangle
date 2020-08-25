@@ -3,7 +3,6 @@ import { Component, OnInit, ViewChild, OnDestroy, HostListener, ElementRef } fro
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { WaypointList, RWRoute, Permits } from '../models/';
-import { WaypointRepoService } from '../services/WaypointRepoService';
 import { StateService } from '../state.service';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../auth/auth.service';
@@ -19,7 +18,7 @@ import { MatMenuTrigger } from '@angular/material/menu';
 import { PreparedWaypointLists } from '../models/PreparedWaypointLists';
 import { PointsDismissAction } from 'PointsDismissAction';
 import { Waypoint } from '../models/Waypoint';
-import { NotificationService } from '../services/notification.service';
+import { ManageModeComponent } from './manage-mode/manage-mode.component';
 
 @Component({
     selector: 'app-welcome',
@@ -39,6 +38,9 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     showControls: boolean;
     showLocationButton = true;
 
+    manageMode = false;
+    waypointsOnMap: Waypoint[] = [];
+
     mobile: boolean;
     @ViewChild('modalRoot') modalRoot;
 
@@ -47,14 +49,11 @@ export class WelcomeComponent implements OnInit, OnDestroy {
         public router: Router,
         private activatedRoute: ActivatedRoute,
         private _bottomSheet: MatBottomSheet,
-        // Do not remove waypointService!
-        private waypointService: WaypointRepoService,
         private stateService: StateService,
         private matDialog: MatDialog,
         private sharedService: SharedService,
         public auth: AuthService,
-        private elementRef: ElementRef,
-        private notificationService: NotificationService
+        private elementRef: ElementRef
     ) {
         this.mobile = isMobile;
         this.showControls = true;
@@ -91,6 +90,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
             ['d']: () =>
                 this.pointsDialogRef ? this.pointsDialogRef.close() : this.separatePoints(),
             ['y']: () => console.log('whatever else you want'),
+            ['m']: () => this.toggleManageMode(),
             ['b']: () => {
                 this.showControls = true;
                 this.menuTrigger?.openMenu();
@@ -125,10 +125,49 @@ export class WelcomeComponent implements OnInit, OnDestroy {
             localStorage.setItem(this.route + 'SelectedList', list.waypointListId);
             this.selectedWaypointList = list;
         });
-        this.subscriptions.push(slSub);
+        const mSub = this.sharedService.manage$.subscribe((manageMode) => {
+            if (manageMode !== this.manageMode) {
+                this.toggleManageMode();
+            }
+        });
+        this.subscriptions.push(slSub, mSub);
 
         this.pointsSheetRef = undefined;
         this.pointsDialogRef = undefined;
+    }
+    boundsChange(waypoints) {
+        this.waypointsOnMap.length = 0;
+        this.waypointsOnMap.push(...waypoints);
+    }
+    toggleManageMode(): void {
+        this.manageMode = !this.manageMode;
+        if (this.manageMode) {
+            this.openManageDialog();
+        } else {
+            this.manageDialogRef.close();
+            this.manageDialogRef = undefined;
+        }
+    }
+    manageDialogRef;
+    openManageDialog(): void {
+        this.manageDialogRef?.close();
+        this.manageDialogRef = this.matDialog.open(ManageModeComponent, {
+            maxHeight: '50vh',
+            minHeight: '50vh',
+            panelClass: 'no-scroll',
+            hasBackdrop: false,
+            position: {
+                ['left']: '10px',
+            },
+            data: {
+                waypointsOnMap: this.waypointsOnMap,
+                waypointLists: this.waypointLists,
+                currentList: this.selectedWaypointList,
+            },
+        });
+        this.manageDialogRef.afterClosed().subscribe(() => {
+            this.sharedService.nextManage(false);
+        });
     }
 
     openEditDialog(newWp: Waypoint): void {

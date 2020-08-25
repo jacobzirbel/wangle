@@ -4,8 +4,10 @@ import { CompareWaypoint } from 'src/app/models/';
 @Component({
     selector: 'app-partial-match',
     template: `
-        <strong>These are ignored when copying or moving from a list</strong>
-        <strong>They will remain in the original list</strong>
+        <div *ngIf="ignore">
+            <strong>These are ignored when copying or moving from a list</strong><br />
+            <strong>They will remain in the original list</strong>
+        </div>
         <table class="table table-striped">
             <thead>
                 <tr>

@@ -1,0 +1,13 @@
+<h1 mat-dialog-title cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>Manage lists</h1>
+<p>manage-mode works!</p>
+
+<button (click)="close()">Close</button>
+<button (click)="moveWaypoints()">Move</button>
+<button (click)="copyWaypoints()">Copy</button>
+<button (click)="deleteWaypoints()">Delete</button>
+
+<div>
+    <p *ngFor="let wp of waypointsOnMap">
+        {{ wp.name }}
+    </p>
+</div>

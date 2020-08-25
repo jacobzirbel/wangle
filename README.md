@@ -43,4 +43,6 @@ Help avid fishermen manage and visualize their fishing data and waypoints. A use
 ### Contact
 Email: wanglewaypoints@gmail.com
 
-Code is maintained in a private repository. 
+Code is maintained in a private repository that isn't on GitHub. 
+
+I will periodically update this repo with changes I make.

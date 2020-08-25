@@ -1,0 +1,3 @@
+.tab-group {
+    max-height: calc(var(--fullAfterNav) - 50px);
+}

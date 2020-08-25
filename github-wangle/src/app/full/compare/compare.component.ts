@@ -1,10 +1,13 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { Waypoint, CompareWaypoint } from '../../models/';
 import { WaypointRepoService } from '../../services/WaypointRepoService';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { SharedService } from 'src/app/shared.service';
+import { MAT_DIALOG_DATA, MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { PreparedWaypointLists } from 'src/app/models/PreparedWaypointLists';
 import { WaypointList } from 'src/app/models/WaypointList';
+import { EditWaypointListComponent } from '../edit/edit-waypoint-list.component';
+import { StateService } from 'src/app/state.service';
+import { StringMap } from '@angular/compiler/src/compiler_facade_interface';
+import { ConvertDialogComponent } from 'src/app/components/convert-dialog/convert-dialog.component';
 @Component({
     selector: 'app-compare',
     templateUrl: './compare.component.html',
@@ -21,10 +24,12 @@ export class CompareComponent implements OnInit {
     exacts: CompareWaypoint[];
     news: CompareWaypoint[];
     invalids: CompareWaypoint[];
+    okSymbols = true;
     constructor(
-        private sharedService: SharedService,
+        private matDialog: MatDialog,
         private waypointService: WaypointRepoService,
         public dialogRef: MatDialogRef<CompareComponent>,
+        private stateService: StateService,
 
         @Inject(MAT_DIALOG_DATA)
         public data: {
@@ -42,13 +47,42 @@ export class CompareComponent implements OnInit {
         this.getCompareWaypoints();
     }
 
+    convertSymbols() {
+        this.waypointService.convertWaypoints(
+            this.importWaypoints,
+            this.selectedWaypointList.deviceId,
+            this.showModal
+        );
+    }
+
+    showModal = (changes: StringMap): void => {
+        const dialogRef = this.matDialog.open(ConvertDialogComponent, {
+            width: '300px',
+            data: { changes },
+        });
+        dialogRef.afterClosed().subscribe((changes) => {
+            if (changes) {
+                this.importWaypoints.forEach((wp) => {
+                    wp.symbol = changes[wp.symbol];
+                });
+                this.getCompareWaypoints();
+            }
+        });
+    };
+
     getCompareWaypoints(): void {
         this.compareWaypoints = this.waypointService.computeDiff(
             [...this.importWaypoints],
             Object.assign({}, this.selectedWaypointList)
         );
-
-        this.sharedService.nextSelectedList(this.selectedWaypointList);
+        if (this.selectedWaypointList.deviceId != '0') {
+            const result = this.waypointService.detectDeviceIdFromSymbols(this.importWaypoints);
+            const { detectedId, score } = result;
+            this.okSymbols = detectedId == this.selectedWaypointList.deviceId && score == 1;
+        } else {
+            this.okSymbols = true;
+        }
+        // this.sharedService.nextSelectedList(this.selectedWaypointList);
     }
 
     prepareWaypointsLists(): void {
@@ -73,5 +107,27 @@ export class CompareComponent implements OnInit {
     close(save: boolean): void {
         this.prepareWaypointsLists();
         this.dialogRef.close(save ? this.preparedWaypointsLists : false);
+    }
+
+    editList(list: WaypointList): void {
+        const dialogRef = this.matDialog.open(EditWaypointListComponent, {
+            data: { waypointList: Object.assign({}, list) },
+        });
+        dialogRef.afterClosed().subscribe((result) => {
+            if (!result) return;
+            this.stateService.editList(result);
+            // TODO set selectedWaypointList to new list
+        });
+    }
+
+    addWaypointList(): void {
+        const a: WaypointList = {
+            name: 'new list',
+            deviceId: '0',
+            waypoints: [],
+            waypointListId: '0',
+        };
+
+        this.editList(a);
     }
 }

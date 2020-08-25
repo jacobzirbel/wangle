@@ -55,7 +55,7 @@ import { GeolocationService } from './services/geolocation.service';
 // import { AuthGuard } from './auth/auth.guard';
 import { AuthService } from './auth/auth.service';
 import { ManageListsComponent } from './full/manage-lists/manage-lists.component';
-import { TableManageComponent } from './full/manage-lists/table-manage.component';
+import { TableManageComponent } from './full/manage-lists/table-for-manage/table-manage.component';
 import { ListsTableComponent } from './components/lists/lists-table/lists-table.component';
 import { AdminComponent } from './admin/admin.component';
 import { AutoFocusDirective } from './auto-focus.directive';
@@ -66,6 +66,7 @@ import { DuplicatesDialogComponent } from './components/duplicates-dialog/duplic
 import { MarkerInfoCardComponent } from './components/map/marker-info-card/marker-info-card.component';
 import { NotificationComponent } from './components/notification/notification.component';
 import { NotificationService } from './services/notification.service';
+import { ManageModeComponent } from './full/manage-mode/manage-mode.component';
 @NgModule({
     declarations: [
         AppComponent,
@@ -107,6 +108,7 @@ import { NotificationService } from './services/notification.service';
         DuplicatesDialogComponent,
         MarkerInfoCardComponent,
         NotificationComponent,
+        ManageModeComponent,
     ],
     imports: [
         BrowserModule,

@@ -22,10 +22,7 @@ export class ConvertDialogComponent implements OnInit {
             .filter((e) => e[0] !== e[1]);
     }
     changeAndClose(): void {
-        this.data.list.waypoints.forEach((wp) => {
-            wp.symbol = this.data.changes[wp.symbol];
-        });
-        this.dialogRef.close(this.data.list);
+        this.dialogRef.close(this.data.changes);
     }
     close(): void {
         this.dialogRef.close();

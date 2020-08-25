@@ -50,7 +50,7 @@ export class DownloadModalComponent implements OnInit {
         this.waypointService.convertList(
             this.selectedWaypointList,
             this.selectedDevice.id,
-            (list, waypointsCopy, changes) => {
+            (changes) => {
                 Object.keys(changes).forEach((k) => {
                     if (changes[k] === k) delete changes[k];
                 });
@@ -74,16 +74,21 @@ export class DownloadModalComponent implements OnInit {
             this.download(this.selectedWaypointList);
         } else {
             // this will not change the original list, this has been cloned
-            this.showModal(this.selectedWaypointList, null, this.changes);
+            this.showModal(this.changes);
         }
     }
-    showModal(list: WaypointList, waypointsCopy: Waypoint[], changes: StringMap): void {
+
+    showModal(changes: StringMap): void {
         const dialogRef = this.matDialog.open(ConvertDialogComponent, {
             width: '300px',
-            data: { list, waypointsCopy, changes },
+            data: { changes },
         });
-        dialogRef.afterClosed().subscribe((list) => {
-            if (list) {
+        dialogRef.afterClosed().subscribe((changes) => {
+            const list = this.selectedWaypointList;
+            if (changes) {
+                list.waypoints.forEach((wp) => {
+                    wp.symbol = changes[wp.symbol];
+                });
                 this.download(list);
             }
         });

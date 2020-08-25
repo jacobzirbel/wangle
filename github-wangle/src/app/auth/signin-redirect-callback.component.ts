@@ -16,7 +16,7 @@ export class SigninRedirectCallbackComponent implements OnInit {
                 this.router.navigate(['/'], { replaceUrl: true });
             })
             .catch(() => {
-                console.log('redirect callback');
+                console.warn('redirect callback error');
             });
     }
 }

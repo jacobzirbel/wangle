@@ -2,25 +2,32 @@
     <h1 mat-dialog-title>Compare</h1>
     <div mat-dialog-content>
         <div>
-            <select
-                type="text"
-                class="form-control"
-                required
-                [(ngModel)]="selectedWaypointList"
-                id="selectedList"
-                (change)="getCompareWaypoints()"
-            >
-                <option *ngFor="let list of waypointLists" [ngValue]="list">
-                    {{ list.name }}
-                </option>
-            </select>
+            <mat-form-field>
+                <mat-label>Select a List</mat-label>
+                <mat-select
+                    type="text"
+                    class="form-control"
+                    required
+                    [(ngModel)]="selectedWaypointList"
+                    id="selectedList"
+                    (selectionChange)="getCompareWaypoints()"
+                >
+                    <button mat-button (click)="addWaypointList()">
+                        <mat-icon>library_add</mat-icon>Add List
+                    </button>
+                    <mat-option *ngFor="let list of waypointLists" [value]="list">
+                        {{ list.name }}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+            <button *ngIf="!okSymbols" (click)="convertSymbols()">Convert Symbols</button>
             <mat-accordion name="compareWaypoints" ngDefaultControl>
                 <mat-expansion-panel *ngIf="([compareWaypoints, 'PartialMatch'] | filter).length">
                     <mat-expansion-panel-header>
                         <mat-panel-title>
                             Partial Matches
                             {{ ([compareWaypoints, "PartialMatch"] | filter).length }}
-                            Will be ignored
+                            {{ data.isImport ? null : "Will be ignored" }}
                         </mat-panel-title>
                     </mat-expansion-panel-header>
                     <app-partial-match

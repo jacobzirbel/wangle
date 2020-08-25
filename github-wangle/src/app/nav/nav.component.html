@@ -123,6 +123,15 @@
                 >
                     Log Out
                 </a>
+                <a
+                    mat-button
+                    class="top-a"
+                    *ngIf="!auth.loggedIn"
+                    [routerLink]="['/home']"
+                    (click)="router.url === '/home' && login()"
+                >
+                    Log In
+                </a>
             </div>
         </div>
         <!--  -->
@@ -167,6 +176,15 @@
                     (click)="logout()"
                 >
                     Log Out
+                </a>
+                <a
+                    class="a-button"
+                    *ngIf="!auth.loggedIn"
+                    mat-flat-button
+                    [routerLink]="['/home']"
+                    (click)="router.url === '/home' && login()"
+                >
+                    Log In
                 </a>
             </div>
             <br />

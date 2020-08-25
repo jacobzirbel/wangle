@@ -1,6 +1,8 @@
 import { Component, OnInit, ViewChild, HostListener, ChangeDetectorRef } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
 import { Router } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
+import { AlertDialogComponent } from '../components/alert-dialog/alert-dialog.component';
 
 @Component({
     selector: 'app-nav',
@@ -12,7 +14,12 @@ export class NavComponent implements OnInit {
     sidebar: boolean;
     isLoggedIn: boolean;
 
-    constructor(public auth: AuthService, public router: Router, private cdf: ChangeDetectorRef) {
+    constructor(
+        public auth: AuthService,
+        public router: Router,
+        private cdf: ChangeDetectorRef,
+        private matDialog: MatDialog
+    ) {
         this.sidebar = window.innerWidth < 960;
     }
     @HostListener('window:resize', ['$event'])
@@ -25,14 +32,28 @@ export class NavComponent implements OnInit {
     ngOnInit(): void {
         return;
     }
-    login() {
-        this.auth.login();
+    login(): void {
+        const dialogRef = this.matDialog.open(AlertDialogComponent, {
+            width: '300px',
+            data: {
+                content1: 'Email us to join',
+                content2: 'wanglewaypoints@gmail.com',
+                input: true,
+            },
+        });
+        dialogRef.updatePosition({ top: '23vh' });
+        dialogRef.afterClosed().subscribe((entered: number) => {
+            if (entered == 1) {
+                // this.router.navigateByUrl('/full');
+                this.auth.login();
+            }
+        });
     }
     logout() {
         this.auth.logout();
     }
     toggleSide(): void {
-        if (this.sidebar) this.sidenav.toggle();
+        this.sidenav.close();
     }
     listChange(name: string): void {
         if (this.listName) {

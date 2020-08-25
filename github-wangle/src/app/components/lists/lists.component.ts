@@ -52,9 +52,7 @@ export class ListsComponent implements OnInit, OnDestroy {
             }
         });
     }
-    isFull(): boolean {
-        return this.route === 'full';
-    }
+
     ngOnInit(): void {
         const s = (resolve, reject) => {
             const sub = this.sharedService.selectedList$.subscribe((list: WaypointList) => {
@@ -91,6 +89,7 @@ export class ListsComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         this.subscriptions.forEach((sub) => sub.unsubscribe());
     }
+
     waypointListSelected(selected: WaypointList): void {
         this.sharedService.nextSelectedList(selected);
     }
@@ -99,6 +98,7 @@ export class ListsComponent implements OnInit, OnDestroy {
         if (this.router.url !== '/full') alert('error, deleteList');
         this.stateService.deleteList(list.waypointListId);
     }
+
     editList(list: WaypointList): void {
         if (this.router.url !== '/full') alert('error, editList');
         const dialogRef = this.matDialog.open(EditWaypointListComponent, {
@@ -119,5 +119,9 @@ export class ListsComponent implements OnInit, OnDestroy {
         };
 
         this.editList(a);
+    }
+
+    startManage(): void {
+        this.sharedService.nextManage(true);
     }
 }

@@ -16,69 +16,117 @@ export class WaypointRepoService {
 
     constructor(private validate: ValidationService, private http: HttpClient) {}
 
-    detectDeviceIdFromSymbols(list: WaypointList): string {
-        const main = () => {
-            const counts = {};
-            const localSymMap = { ...symbolMap };
-            Object.keys(localSymMap).forEach((deviceId) => {
-                counts[deviceId] = list.waypoints.reduce(
-                    (a, wp) => a + (localSymMap[deviceId].includes(wp.symbol) ? 1 : 0),
-                    0
-                );
-            });
-            const detected = Object.keys(counts).reduce((a, b) => (counts[a] > counts[b] ? a : b));
-            if (list.deviceId == undefined || list.deviceId == null) list.deviceId = detected;
-            return detected;
+    detectDeviceIdFromSymbols(waypoints: Waypoint[]): { detectedId: string; score: number } {
+        const map = this.getSymbolMap();
+        const counts = { '0': 0, '1': 0, '2': 0 };
+        waypoints.forEach((wp) => {
+            if (map['1'].includes(wp.symbol)) {
+                counts['1']++;
+            } else if (map['2'].includes(wp.symbol)) {
+                counts['2']++;
+            } else {
+                counts['0']++;
+            }
+        });
+
+        const detectedId = Object.keys(counts).reduce((a, b) => (counts[a] > counts[b] ? a : b));
+        const score = counts[detectedId] / waypoints.length;
+        return { detectedId, score };
+    }
+
+    getSymbolMap(): { [key: string]: string[] } {
+        return {
+            '1': this.validate.getDeviceSymbols('1'),
+            '2': this.validate.getDeviceSymbols('2'),
         };
-        const ret = main();
-        if (symbolMap) return ret;
-        alert('past return ret');
-        this.getSymbolMap().subscribe((map) => {
-            setMap(map);
-        });
     }
-    getSymbolMap(): Observable<{ [key: string]: string[] }> {
-        // return // observable from http
-        return of({
-            '1': ['Waypoint', 'Shower'],
-            '2': ['waypoint', 'usflag'],
-        });
-    }
+
     convertList(
         list: WaypointList,
         newDeviceId: string,
-        callback?: (list: WaypointList, waypointsCopy: Waypoint[], changes: StringMap) => void
+        callback?: (changes: StringMap) => void
     ): void {
         const changes = {};
-        this.getSymbolMap().subscribe((map) => {
-            setMap(map);
-            const detectedId = this.detectDeviceIdFromSymbols(list);
+        const map = this.getSymbolMap();
+        const { detectedId } = this.detectDeviceIdFromSymbols(list.waypoints);
 
-            if (list.deviceId != '0' && detectedId != list.deviceId) {
-                alert('detectDevice error');
+        if (list.deviceId != '0' && detectedId != list.deviceId) {
+            alert('detectDevice error');
+        }
+        if (!newDeviceId) {
+            newDeviceId = detectedId == '1' ? '2' : '1';
+        }
+        const defaultSymbol = map[newDeviceId][0];
+        const waypointsCopy = list.waypoints.map((wp) => ({ ...wp }));
+        waypointsCopy.forEach((wp) => {
+            const i = map[detectedId].indexOf(wp.symbol);
+            const ok = map[newDeviceId].includes(wp.symbol);
+            let newSymbol;
+            if (ok) {
+                newSymbol = wp.symbol;
+            } else {
+                newSymbol = map[newDeviceId][i] || defaultSymbol;
             }
-            if (!newDeviceId) newDeviceId = detectedId == '1' ? '2' : '1';
-            const waypointsCopy = list.waypoints.map((wp) => ({ ...wp }));
-            waypointsCopy.forEach((wp) => {
-                const i = map[detectedId].indexOf(wp.symbol);
-                let newSymbol;
-                if (i === -1 || i > map[newDeviceId].length) {
-                    newSymbol = map[newDeviceId][0];
-                } else {
-                    newSymbol = map[newDeviceId][i];
-                }
-                if (!changes[wp.symbol]) changes[wp.symbol] = newSymbol;
-                wp.symbol = newSymbol;
-            });
-            // list.deviceId = newDeviceId;
-            if (callback) callback(list, waypointsCopy, changes);
+            // if (i === -1 || i > map[newDeviceId].length) {
+            //     newSymbol = map[newDeviceId][0];
+            // } else {
+            //     newSymbol = map[newDeviceId][i];
+            // }
+            if (!changes[wp.symbol]) {
+                changes[wp.symbol] = newSymbol;
+            }
+            wp.symbol = newSymbol;
         });
+        if (callback) {
+            callback(changes);
+        }
     }
+
+    convertWaypoints(
+        waypoints: Waypoint[],
+        newDeviceId: string,
+        callback?: (changes: StringMap) => void
+    ): void {
+        const changes = {};
+        const map = this.getSymbolMap();
+        const { detectedId } = this.detectDeviceIdFromSymbols(waypoints);
+
+        if (!newDeviceId) {
+            newDeviceId = detectedId == '1' ? '2' : '1';
+        }
+
+        const defaultSymbol = map[newDeviceId][0];
+        const waypointsCopy = waypoints.map((wp) => ({ ...wp }));
+        waypointsCopy.forEach((wp) => {
+            const i = map[detectedId].indexOf(wp.symbol);
+            const ok = map[newDeviceId].includes(wp.symbol);
+            let newSymbol;
+            if (ok) {
+                newSymbol = wp.symbol;
+            } else {
+                newSymbol = map[newDeviceId][i] || defaultSymbol;
+            }
+            // if (i === -1 || i > map[newDeviceId].length) {
+            //     newSymbol = map[newDeviceId][0];
+            // } else {
+            //     newSymbol = map[newDeviceId][i];
+            // }
+            if (!changes[wp.symbol]) {
+                changes[wp.symbol] = newSymbol;
+            }
+            wp.symbol = newSymbol;
+        });
+        if (callback) {
+            callback(changes);
+        }
+    }
+
     saveWaypoint(wp: Waypoint): Observable<Waypoint> {
         return this.http.post<Waypoint>(baseUrl + 'api/SampleData/EditWaypointNew', wp, {
             headers: { 'Content-Type': 'application/json' },
         });
     }
+
     saveList(wpList: Waypoint[], waypointListId: string): Observable<Waypoint[]> {
         return this.http.post<Waypoint[]>(
             baseUrl + 'api/SampleData/EditWaypoints?waypointListId=' + waypointListId,
@@ -88,6 +136,7 @@ export class WaypointRepoService {
             }
         );
     }
+
     delete(wp: Waypoint): Observable<Waypoint> {
         return this.http.post<Waypoint>(baseUrl + 'api/SampleData/DeleteWaypoint', wp, {
             headers: { 'Content-Type': 'application/json' },
@@ -110,6 +159,7 @@ export class WaypointRepoService {
         );
         return o;
     }
+
     deleteWaypointList(wpl: WaypointList): Observable<WaypointList> {
         const o = this.http.post<WaypointList>(baseUrl + 'api/SampleData/DeleteWaypointList', wpl, {
             headers: { 'Content-Type': 'application/json' },
@@ -200,7 +250,6 @@ export class WaypointRepoService {
     }
 
     computeDiff(importWaypoints: Waypoint[], currentList: WaypointList): CompareWaypoint[] {
-        console.time('diff');
         const ret: CompareWaypoint[] = [];
         this.dbWaypoints = [...currentList.waypoints];
         const currentWaypoints = [...currentList.waypoints];
@@ -263,7 +312,6 @@ export class WaypointRepoService {
             });
         });
 
-        console.timeEnd('diff');
         return ret;
     }
 }

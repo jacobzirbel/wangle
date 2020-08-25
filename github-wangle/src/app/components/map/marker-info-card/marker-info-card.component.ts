@@ -7,6 +7,7 @@ import {
     ViewChildren,
     ChangeDetectionStrategy,
     ChangeDetectorRef,
+    OnDestroy,
 } from '@angular/core';
 import { Waypoint } from 'src/app/models/Waypoint';
 import { ValidationService } from 'src/app/services/ValidationService';
@@ -39,10 +40,12 @@ export class MarkerInfoCardComponent implements OnInit {
     ngOnInit(): void {
         return;
     }
+
     editWaypoint(): void {
         // This is for opening edit dialog
         this.StartEdit.emit(this.waypoint);
     }
+
     dblClickTitle(): void {
         setTimeout(() => {
             // TODO
@@ -52,6 +55,7 @@ export class MarkerInfoCardComponent implements OnInit {
         this.waypointNameEdited = this.waypoint.name;
         this.ref.detectChanges();
     }
+
     editedNameChange(): void {
         this.waypointNameValid = this.validationService.validateName(
             this.waypointNameEdited,
@@ -70,11 +74,12 @@ export class MarkerInfoCardComponent implements OnInit {
         this.symbolBeingEdited = true;
         this.waypointSymbolEdited = this.waypoint.symbol;
         if (!this.allSymbols) {
-            this.allSymbols = this.validationService.getAllowedSymbols(this.deviceId);
+            this.allSymbols = this.validationService.getDeviceSymbols(this.deviceId).sort();
         }
         this.symbols = this.allSymbols;
         this.ref.detectChanges();
     }
+
     symbolChange(): void {
         if (this.waypoint.symbol !== this.waypointSymbolEdited) {
             this.waypoint.symbol = this.waypointSymbolEdited;
@@ -82,16 +87,18 @@ export class MarkerInfoCardComponent implements OnInit {
         }
         this.waypointSymbolEdited = '';
         this.symbolBeingEdited = false;
-        console.log(this.symbolBeingEdited);
     }
+
     onKey(value: string): boolean {
         this.symbols = this.search(value);
         return true;
     }
+
     search(value: string): string[] {
         const filter = value.toLowerCase();
         return this.allSymbols.filter((option) => option.toLowerCase().startsWith(filter));
     }
+
     inputKeyDown(event: KeyboardEvent): void {
         if (event.key === 'Escape') {
             this.waypointNameEdited = '';
@@ -105,6 +112,7 @@ export class MarkerInfoCardComponent implements OnInit {
         }
         event.stopPropagation();
     }
+
     inputBlur(): void {
         if (!this.waypointNameValid) {
             this.waypointNameEdited = '';

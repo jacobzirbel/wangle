@@ -34,7 +34,7 @@
             <mat-label>Filter</mat-label>
             <input matInput (keyup)="handleFilterInput($event)" placeholder="Filter" #input />
         </mat-form-field> -->
-        <mat-tab-group>
+        <mat-tab-group class="tab-group">
             <mat-tab label="All from list">
                 <table-manage
                     [waypoints]="allWaypointsList"
@@ -57,6 +57,9 @@
         </mat-tab-group>
     </div>
     <div>
+        <button (click)="deleteSelected()">Delete</button>
+        <button (click)="moveToDifferentList()">Move to list...</button>
+        <button (click)="copyToList()">Copy to list...</button>
         <table-manage
             *ngIf="waypointsSelected"
             [waypoints]="waypointsSelected"
@@ -64,8 +67,5 @@
             (SelectedChange)="selectedChange($event)"
             (MasterToggle)="masterToggle($event, waypointsSelected)"
         ></table-manage>
-        <button (click)="deleteSelected()">Delete</button>
-        <button (click)="moveToDifferentList()">Move to list...</button>
-        <button (click)="copyToList()">Copy to list...</button>
     </div>
 </div>

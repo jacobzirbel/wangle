@@ -1,9 +1,10 @@
-<div class="form-group">
-    <label for="file"> File</label>
-    <input
-        #fileUploadComponent
-        type="file"
-        value="{{ fileName }}"
-        (change)="handleFileInput($event.target.files)"
-    />
-</div>
+<input
+    #fileUploadComponent
+    style="display: none;"
+    type="file"
+    value="{{ fileName }}"
+    (change)="handleFileInput($event.target.files)"
+/>
+<button mat-raised-button color="secondary" (click)="fileUploadComponent.click()">
+    <mat-icon>file_upload</mat-icon> Upload
+</button>

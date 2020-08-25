@@ -1,87 +1,91 @@
-<app-home *ngIf="route === 'home' || route === '/'; else welcome"></app-home>
+<app-map
+    #appMap
+    [allowEdit]="permits.wpEdit"
+    [waypoints]="selectedWaypointList.waypoints"
+    [permits]="permits"
+    [deviceId]="selectedWaypointList.deviceId"
+    [shouldWatchBounds]="manageMode"
+    (LeftClick)="showControls = !showControls"
+    (NoLocation)="showLocationButton = false"
+    (EditWaypoint)="waypointMethods.edit($event)"
+    (WaypointEdited)="waypointMethods.save($event)"
+    (BoundsChange)="boundsChange($event)"
+></app-map>
 
-<ng-template #welcome>
-    <app-map
-        #appMap
-        [allowEdit]="permits.wpEdit"
-        [waypoints]="selectedWaypointList.waypoints"
-        [permits]="permits"
-        [deviceId]="selectedWaypointList.deviceId"
-        (LeftClick)="showControls = !showControls"
-        (NoLocation)="showLocationButton = false"
-        (EditWaypoint)="waypointMethods.edit($event)"
-        (WaypointEdited)="waypointMethods.save($event)"
-    ></app-map>
-
-    <div class="menu-container" *ngIf="showControls">
-        <button
-            mat-raised-button
-            color="primary"
-            #menuTrigger="matMenuTrigger"
-            [matMenuTriggerFor]="menu"
-            (click)="$event.stopPropagation()"
-        >
-            Map Options
-        </button>
-        <mat-menu
-            #menu="matMenu"
-            class="menu"
-            (click)="$event.stopPropagation()"
-            [hasBackdrop]="false"
-        >
-            <div class="radio">
-                <mat-radio-group
-                    aria-labelledby="radio-group-label"
-                    class="radio-group"
-                    [(ngModel)]="appMap.mapType"
-                >
-                    <mat-radio-button
-                        class="radio"
-                        *ngFor="let op of ['roadmap', 'hybrid', 'terrain']"
-                        [value]="op"
-                        (click)="$event.stopPropagation()"
-                    >
-                        {{ op }}
-                    </mat-radio-button>
-                </mat-radio-group>
-            </div>
-            <div class="toggles">
-                <mat-slide-toggle
-                    class="toggle"
-                    (click)="$event.stopPropagation()"
-                    (change)="appMap.toggleClusters()"
-                    [checked]="appMap.useClusters"
-                    >Clusters</mat-slide-toggle
-                >
-                &nbsp;
-                <mat-slide-toggle
-                    class="toggle"
-                    (click)="$event.stopPropagation()"
-                    [checked]="appMap.useNavionics"
-                    (change)="appMap.updateNavionics()"
-                    >Navionics</mat-slide-toggle
-                >
-            </div>
-        </mat-menu>
-    </div>
-
+<div class="menu-container" *ngIf="showControls">
     <button
         mat-raised-button
-        class="chip"
-        (click)="openBottomSheet()"
         color="primary"
-        *ngIf="showControls"
+        #menuTrigger="matMenuTrigger"
+        [matMenuTriggerFor]="menu"
+        (click)="$event.stopPropagation()"
     >
+        Map Options
+    </button>
+    <mat-menu #menu="matMenu" class="menu" (click)="$event.stopPropagation()" [hasBackdrop]="false">
+        <div class="radio">
+            <mat-radio-group
+                aria-labelledby="radio-group-label"
+                class="radio-group"
+                [(ngModel)]="appMap.mapType"
+            >
+                <mat-radio-button
+                    class="radio"
+                    *ngFor="let op of ['roadmap', 'hybrid', 'terrain']"
+                    [value]="op"
+                    (click)="$event.stopPropagation()"
+                >
+                    {{ op }}
+                </mat-radio-button>
+            </mat-radio-group>
+        </div>
+        <div class="toggles">
+            <mat-slide-toggle
+                class="toggle"
+                (click)="$event.stopPropagation()"
+                (change)="appMap.toggleClusters()"
+                [checked]="appMap.useClusters"
+                >Clusters</mat-slide-toggle
+            >
+            &nbsp;
+            <mat-slide-toggle
+                class="toggle"
+                (click)="$event.stopPropagation()"
+                [checked]="appMap.useNavionics"
+                (change)="appMap.updateNavionics()"
+                >Navionics</mat-slide-toggle
+            >
+        </div>
+    </mat-menu>
+</div>
+
+<div *ngIf="showControls" class="chip">
+    <button mat-raised-button (click)="openBottomSheet()" color="primary">
         Open Waypoints
     </button>
-
     <button
-        mat-mini-fab
-        *ngIf="mobile && showLocationButton && showControls"
-        color="accent"
-        (click)="startCurrentLocation()"
-        class="current-location"
+        *ngIf="permits.download"
+        mat-raised-button
+        (click)="waypointMethods.download()"
+        color="secondary"
     >
-        <mat-icon>near_me</mat-icon>
+        <mat-icon>file_download</mat-icon>
+        Download
     </button>
-</ng-template>
+    <upload-btn
+        *ngIf="permits.upload"
+        [selectedWaypointList]="selectedWaypointList"
+        [waypointLists]="waypointLists"
+        [route]="route"
+        [isFull]="route === 'full'"
+    ></upload-btn>
+</div>
+<button
+    mat-mini-fab
+    *ngIf="mobile && showLocationButton && showControls"
+    color="accent"
+    (click)="startCurrentLocation()"
+    class="current-location"
+>
+    <mat-icon>near_me</mat-icon>
+</button>

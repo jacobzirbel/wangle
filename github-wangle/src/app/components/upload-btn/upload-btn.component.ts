@@ -8,7 +8,6 @@ import { PreparedWaypointLists } from 'src/app/models/PreparedWaypointLists';
 import { Waypoint } from 'src/app/models/Waypoint';
 import { CompareComponent } from 'src/app/full/compare/compare.component';
 import { WaitService } from 'src/app/services/wait.service';
-import { Notif } from 'src/app/models/Notif';
 import { NotificationService } from 'src/app/services/notification.service';
 
 @Component({

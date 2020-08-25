@@ -85,11 +85,14 @@ export class ManageListsComponent implements OnInit {
     }
 
     deleteList(list: WaypointList): void {
-        this.stateService.deleteList(list.waypointListId);
+        const index = this.waypointLists.indexOf(list);
+        this.currentList = this.waypointLists[index + 1] || this.waypointLists[index - 1];
+        this.stateService.deleteList(list.waypointListId).then(() => {
+            return;
+        });
     }
 
     editList(list: WaypointList): void {
-        if (this.router.url !== '/full') alert('error, editList');
         const dialogRef = this.matDialog.open(EditWaypointListComponent, {
             data: { waypointList: Object.assign({}, list) },
         });
@@ -110,10 +113,8 @@ export class ManageListsComponent implements OnInit {
         this.editList(a);
     }
 
-    setWaypointsOnMap(waypointsOnMapIds: string[]): void {
-        this.waypointsOnMap = this.currentList.waypoints.filter((wp) =>
-            waypointsOnMapIds.includes(wp.waypointId)
-        );
+    setWaypointsOnMap(waypointsOnMap: Waypoint[]): void {
+        this.waypointsOnMap = waypointsOnMap;
     }
     // selectedChange(event: Waypoint[]): void {
     //     this.waypointsSelected = event;
@@ -145,7 +146,6 @@ export class ManageListsComponent implements OnInit {
             .deleteArrayOfWaypoints(this.waypointsSelected, this.currentList.waypointListId)
             .then(() => {
                 this.refreshTables();
-                this.selection = new SelectionModel<Waypoint>(true, []);
             });
     }
 
@@ -165,7 +165,6 @@ export class ManageListsComponent implements OnInit {
             if (onlyImport?.length) {
                 this.stateService.moveWaypoints(onlyImport, toListId).then(() => {
                     this.refreshTables();
-                    this.selection = new SelectionModel<Waypoint>(true, []);
                 });
             }
         });
@@ -186,7 +185,6 @@ export class ManageListsComponent implements OnInit {
             if (onlyImport?.length) {
                 this.stateService.copyWaypoints(onlyImport, toListId).then(() => {
                     this.refreshTables();
-                    // this.selection = new SelectionModel<Waypoint>(true, []);
                 });
             }
         });
@@ -195,5 +193,6 @@ export class ManageListsComponent implements OnInit {
         this.mapWaypoints = [...this.currentList.waypoints];
         this.allWaypointsList = [...this.currentList.waypoints];
         this.waypointsSelected = [];
+        this.selection = new SelectionModel<Waypoint>(true, this.waypointsSelected);
     }
 }

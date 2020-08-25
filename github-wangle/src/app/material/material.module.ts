@@ -31,7 +31,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSidenavModule } from '@angular/material/sidenav';
 // import { MatSliderModule } from '@angular/material/slider';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-// import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 // import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -43,8 +43,8 @@ import { MatDividerModule } from '@angular/material/divider';
 
 @NgModule({
     imports: [
-    // MatAutocompleteModule,
-    // MatBadgeModule,
+        // MatAutocompleteModule,
+        // MatBadgeModule,
         MatButtonModule,
         // MatButtonToggleModule,
         MatCardModule,
@@ -69,7 +69,7 @@ import { MatDividerModule } from '@angular/material/divider';
         MatSidenavModule,
         // MatSliderModule,
         MatSlideToggleModule,
-        // MatSnackBarModule,
+        MatSnackBarModule,
         // MatSortModule,
         MatTableModule,
         MatTabsModule,
@@ -81,8 +81,8 @@ import { MatDividerModule } from '@angular/material/divider';
         MatDividerModule,
     ],
     exports: [
-    // // MatAutocompleteModule,
-    // // MatBadgeModule,
+        // // MatAutocompleteModule,
+        // // MatBadgeModule,
         MatButtonModule,
         // MatButtonToggleModule,
         MatCardModule,
@@ -107,7 +107,7 @@ import { MatDividerModule } from '@angular/material/divider';
         MatSidenavModule,
         // // MatSliderModule,
         MatSlideToggleModule,
-        // // MatSnackBarModule,
+        MatSnackBarModule,
         // // MatSortModule,
         MatTableModule,
         MatTabsModule,
@@ -122,8 +122,8 @@ import { MatDividerModule } from '@angular/material/divider';
 })
 export class MaterialModule {
     constructor(public matIconRegistry: MatIconRegistry) {
-    //
-    // matIconRegistry.registerFontClassAlias('fontawesome', 'fa');
+        //
+        // matIconRegistry.registerFontClassAlias('fontawesome', 'fa');
     }
 
     static forRoot(): ModuleWithProviders {

@@ -34,7 +34,6 @@ export class StateService {
         return new Promise((resolve, reject) => {
             // make sure isLoaded and same user is logged in
             if (LOCAL_DB.loaded) {
-                console.log('user data was already loaded');
                 this.waitService.endTask(taskId);
                 resolve({
                     lists: LOCAL_DB.waypointLists,
@@ -51,6 +50,7 @@ export class StateService {
                     .pipe(take(1))
                     .subscribe(
                         async (userData) => {
+                            console.log(userData);
                             if (!userData.waypointLists.length) {
                                 // add the first list
                                 await this.newUser();
@@ -66,6 +66,7 @@ export class StateService {
                             LOCAL_DB.devices.push(...userData.devices);
                             LOCAL_DB.loaded = true;
                             this.setState();
+                            this.waitService.endTask(taskId);
                             this.notificationService.success('Success', 'User Data Retrieved');
                             resolve({
                                 lists: LOCAL_DB.waypointLists,
@@ -79,14 +80,13 @@ export class StateService {
                             });
                         },
                         (err) => {
+                            console.error(err);
+                            this.waitService.endTask(taskId);
                             this.notificationService.error(
                                 'Error',
                                 'Could not get your data, try refreshing the page'
                             );
                             reject(false);
-                        },
-                        () => {
-                            this.waitService.endTask(taskId);
                         }
                     );
             }
@@ -97,7 +97,7 @@ export class StateService {
         return this.http.get<UserData>(baseUrl + 'api/SampleData/GetUserData');
     }
 
-    async newUser(): Promise<any> {
+    async newUser(): Promise<void> {
         const a: WaypointList = {
             name: 'My First List',
             deviceId: '0',
@@ -115,9 +115,7 @@ export class StateService {
             waypointLists.find((l) => l.waypointListId == listId) || waypointLists[0];
 
         // this.subjectNext({ waypointLists, selectedWaypointList: currentList });
-        if (listId) {
-            this.sharedService.nextSelectedList(currentList);
-        }
+        this.sharedService.nextSelectedList(currentList);
     }
     // getSubject(): BehaviorSubject<State> {
     //     return this.stateSubject;
@@ -129,7 +127,7 @@ export class StateService {
     //     return this.state;
     // }
 
-    addWaypoint(wp: Waypoint, listId: string): Promise<any> {
+    addWaypoint(wp: Waypoint, listId: string): Promise<boolean> {
         const taskId = this.waitService.startTask();
         return new Promise((resolve, reject) => {
             const { list } = this.getById(listId, wp.waypointId);
@@ -141,51 +139,54 @@ export class StateService {
                     (res) => {
                         list.waypoints.push(res);
                         this.setState(list.waypointListId);
+                        this.waitService.endTask(taskId);
+
                         this.notificationService.success('Success', '1 waypoint added');
                         resolve(true);
                     },
                     (err) => {
+                        this.waitService.endTask(taskId);
+
                         this.notificationService.error('Error', 'Waypoint not added');
                         reject(false);
                         throw err;
-                    },
-                    () => {
-                        this.waitService.endTask(taskId);
                     }
                 );
         });
     }
 
-    editWaypoint(wp: Waypoint): void {
-        const brandNew = wp.waypointId === '0';
-        const taskId = this.waitService.startTask();
-        const { list, waypoint } = this.getById(wp.waypointListId, wp.waypointId);
-        this.waypointService
-            .saveWaypoint(wp)
-            .pipe(take(1))
-            .subscribe(
-                (res: Waypoint) => {
-                    if (waypoint) {
-                        Object.assign(waypoint, res);
+    editWaypoint(wp: Waypoint): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const brandNew = wp.waypointId === '0';
+            const taskId = this.waitService.startTask();
+            const { list, waypoint } = this.getById(wp.waypointListId, wp.waypointId);
+            this.waypointService
+                .saveWaypoint(wp)
+                .pipe(take(1))
+                .subscribe(
+                    (res: Waypoint) => {
+                        if (waypoint) {
+                            Object.assign(waypoint, res);
+                        }
+                        if (!waypoint) {
+                            list.waypoints.push(res);
+                        }
+                        this.waitService.endTask(taskId);
+                        this.notificationService.success(
+                            'Success',
+                            `${waypoint.name} was ${brandNew ? 'added' : 'edited'}`
+                        );
+                        this.setState(list.waypointListId);
+                        resolve();
+                    },
+                    (err) => {
+                        this.waitService.endTask(taskId);
+                        this.notificationService.error('Error', wp.name + ' was not edited');
+                        alert(JSON.stringify(err));
+                        reject();
                     }
-                    if (!waypoint) {
-                        list.waypoints.push(res);
-                    }
-                    this.notificationService.success(
-                        'Success',
-                        `${waypoint.name} was ${brandNew ? 'added' : 'edited'}`
-                    );
-
-                    this.setState(list.waypointListId);
-                },
-                (err) => {
-                    this.notificationService.error('Error', wp.name + ' was not edited');
-                    alert(JSON.stringify(err));
-                },
-                () => {
-                    this.waitService.endTask(taskId);
-                }
-            );
+                );
+        });
     }
 
     addWaypointArray(waypoints: Waypoint[], listId: string): void {
@@ -199,20 +200,19 @@ export class StateService {
                 (res) => {
                     list.waypoints.push(...res);
                     this.setState(list?.waypointListId);
+                    this.waitService.endTask(taskId);
                     this.notificationService.success(
                         'Success',
                         waypoints.length + ' waypoints were added'
                     );
                 },
                 (err) => {
+                    this.waitService.endTask(taskId);
                     this.notificationService.error(
                         'Error',
                         'Waypoints were not added, please try again'
                     );
                     throw err;
-                },
-                () => {
-                    this.waitService.endTask(taskId);
                 }
             );
     }
@@ -232,17 +232,17 @@ export class StateService {
                             Object.assign(old, r);
                         });
                         this.setState(list.waypointListId);
+                        this.waitService.endTask(taskId);
                         this.notificationService.success('Success', 'Waypoints were updated');
 
                         resolve(true);
                     },
                     (err) => {
+                        console.error(err);
                         this.setState();
+                        this.waitService.endTask(taskId);
                         this.notificationService.error('Error', 'Waypoints were not updated');
                         reject(false);
-                    },
-                    () => {
-                        this.waitService.endTask(taskId);
                     }
                 );
         });
@@ -261,16 +261,16 @@ export class StateService {
                     () => {
                         list.waypoints.splice(index, 1);
                         this.setState(listId);
+                        this.waitService.endTask(taskId);
                         this.notificationService.success('Success', name + ' was deleted');
 
                         resolve(true);
                     },
                     (err) => {
+                        console.error(err);
+                        this.waitService.endTask(taskId);
                         this.notificationService.error('Error', name + ' was not deleted');
                         reject(false);
-                    },
-                    () => {
-                        this.waitService.endTask(taskId);
                     }
                 );
         });
@@ -295,6 +295,7 @@ export class StateService {
                             list.waypoints.splice(index, 1);
                         });
                         this.setState(listId);
+                        this.waitService.endTask(taskId);
                         this.notificationService.success(
                             'Success',
                             count + ' waypoints were deleted'
@@ -303,10 +304,10 @@ export class StateService {
                         resolve(true);
                     },
                     (err) => {
-                        this.notificationService.error('Error', 'Waypoints were not deleted');
-                    },
-                    () => {
+                        console.error(err);
                         this.waitService.endTask(taskId);
+                        this.notificationService.error('Error', 'Waypoints were not deleted');
+                        reject(false);
                     }
                 );
         });
@@ -328,17 +329,17 @@ export class StateService {
                         const index = theFromList.waypoints.indexOf(wp);
                         theFromList.waypoints.splice(index, 1);
                     });
-                    this.setState(toListId);
-                    this.notificationService.success('Success', count + ' waypoints were moved');
-
+                    this.setState(theFromList.waypointListId);
+                    this.waitService.endTask(taskId);
+                    const msg = count !== 1 ? 'waypoints were moved' : 'waypoint was moved';
+                    this.notificationService.success('Success', count + msg);
                     resolve(true);
                 },
                 (err) => {
+                    console.error(err);
+                    this.waitService.endTask(taskId);
                     this.notificationService.error('Error', 'Waypoints were not moved');
                     reject(false);
-                },
-                () => {
-                    this.waitService.endTask(taskId);
                 }
             );
         });
@@ -355,23 +356,22 @@ export class StateService {
                     // except for the correct "toList" which just has the new waypoints
                     const realToList = toList.find((l) => l.waypoints);
                     theToList.waypoints.push(...realToList.waypoints);
-                    this.setState(toListId);
-                    this.notificationService.success('Success', count + ' waypoints were copied');
-
+                    this.setState(theFromList.waypointListId);
+                    this.waitService.endTask(taskId);
+                    const msg = count !== 1 ? 'waypoints were copied' : 'waypoint was copied';
+                    this.notificationService.success('Success', count + msg);
                     resolve(true);
                 },
                 (err) => {
                     console.error(err);
+                    this.waitService.endTask(taskId);
                     this.notificationService.error('Error', 'Waypoints were not copied');
                     reject(false);
-                },
-                () => {
-                    this.waitService.endTask(taskId);
                 }
             );
         });
     }
-    addWaypointList(newList: WaypointList): Promise<any> {
+    addWaypointList(newList: WaypointList): Promise<boolean> {
         const taskId = this.waitService.startTask();
         const name = newList.name;
         return new Promise((resolve, reject) => {
@@ -382,18 +382,16 @@ export class StateService {
                     (res) => {
                         LOCAL_DB.waypointLists.length = 0;
                         res.forEach((wpl) => LOCAL_DB.waypointLists.push(wpl));
-                        this.setState(res[0].waypointListId);
+                        this.waitService.endTask(taskId);
                         this.notificationService.success('Success', name + ' was added');
-
                         resolve(true);
                     },
                     (err) => {
+                        console.error(err);
+                        this.waitService.endTask(taskId);
                         this.notificationService.error('Error', name + ' was not added');
                         reject(false);
                         throw err;
-                    },
-                    () => {
-                        this.waitService.endTask(taskId);
                     }
                 );
         });
@@ -408,54 +406,52 @@ export class StateService {
                 (res) => {
                     LOCAL_DB.waypointLists.length = 0;
                     res.forEach((wpl) => LOCAL_DB.waypointLists.push(wpl));
-                    this.setState(
-                        list?.waypointListId ||
-                            LOCAL_DB.waypointLists[LOCAL_DB.waypointLists.length - 1].waypointListId
-                    );
+                    this.waitService.endTask(taskId);
                     this.notificationService.success('Success', 'List was edited');
                 },
                 (err) => {
+                    console.error(err);
+                    this.waitService.endTask(taskId);
                     this.notificationService.error('Error', 'List was not edited');
                     throw err;
-                },
-                () => {
-                    this.waitService.endTask(taskId);
                 }
             );
-
-        this.setState(list?.waypointListId);
     }
-    deleteList(listId: string): void {
-        const taskId = this.waitService.startTask();
-        const { list } = this.getById(listId);
-        const allLists = LOCAL_DB.waypointLists;
-        const index = allLists.indexOf(list);
-        allLists.splice(index, 1);
+    deleteList(listId: string): Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            const taskId = this.waitService.startTask();
+            const { list } = this.getById(listId);
+            const allLists = LOCAL_DB.waypointLists;
+            const index = allLists.indexOf(list);
+            allLists.splice(index, 1);
 
-        this.waypointService
-            .deleteWaypointList(list)
-            .pipe(take(1))
-            .subscribe(
-                () => {
-                    this.setState();
-                    this.notificationService.success('Success', 'List was deleted');
-                },
-                (err) => {
-                    allLists.push(list);
-                    this.setState();
-                    this.notificationService.error('Error', 'List was not deleted');
-                    throw err;
-                },
-                () => {
-                    this.waitService.endTask(taskId);
-                }
-            );
+            this.waypointService
+                .deleteWaypointList(list)
+                .pipe(take(1))
+                .subscribe(
+                    () => {
+                        this.setState();
+                        this.waitService.endTask(taskId);
+                        this.notificationService.success('Success', 'List was deleted');
+                        resolve(true);
+                    },
+                    (err) => {
+                        console.error(err);
+                        allLists.push(list);
+                        this.setState();
+                        this.waitService.endTask(taskId);
+                        this.notificationService.error('Error', 'List was not deleted');
+                        reject(false);
+                        throw err;
+                    }
+                );
+        });
     }
     getById(listId: string, waypointId?: string): { list: WaypointList; waypoint: Waypoint } {
         let waypoint;
         const list = LOCAL_DB.waypointLists.find((wpl) => wpl.waypointListId == listId);
         if (!list) {
-            console.log('no list');
+            console.warn('no list');
         }
         if (waypointId) waypoint = list?.waypoints.find((wp) => wp.waypointId == waypointId);
         return { list, waypoint };

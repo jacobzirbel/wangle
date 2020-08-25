@@ -7,6 +7,12 @@ import { WaypointList, Waypoint, Permits } from './models/';
     providedIn: 'root',
 })
 export class SharedService {
+    private manageSubject = new Subject<Permits>();
+    manage$ = this.manageSubject.asObservable();
+    nextManage(permits: Permits): void {
+        this.manageSubject.next(permits);
+    }
+
     private permitSubject = new Subject<Permits>();
     permits$ = this.permitSubject.asObservable();
     nextPermits(permits: Permits): void {
@@ -25,6 +31,7 @@ export class SharedService {
     nextWaypoints(waypoints: Waypoint[]): void {
         this.waypointsSubject.next(waypoints);
     }
+
     private listsSubject = new Subject<WaypointList[]>();
     allLists$ = this.listsSubject.asObservable();
     nextLists(lists: WaypointList[]): void {
@@ -72,6 +79,7 @@ export class SharedService {
         }
         return { lists, permits, route };
     }
+
     getView(): WaypointList[] {
         let waypoints: Waypoint[];
         let fromStorage;
@@ -97,6 +105,7 @@ export class SharedService {
         };
         return [list];
     }
+
     getCreate(): WaypointList[] {
         const newWp: Waypoint = {
             name: 'My Waypoint',
